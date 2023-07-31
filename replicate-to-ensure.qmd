@@ -86,3 +86,6 @@ tibble(
 
 ```
 
+Clearly, there has been changes to the questionnaire across the waves. __We should get confirmation regarding which wave data was used to generate the results in the WB paper.__ 
+
+It might be that the questions we are interested in are present in the questionnaire across all the waves.
