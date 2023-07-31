@@ -1,0 +1,84 @@
+---
+title: "Reproducibility Check"
+author: "Ayush"
+format: 
+  html:
+    code-fold: true
+---
+
+# What is this document?
+
+Here in this doc I will try and reproduce some of the results in the World Bank paper "Intent to implementation: Summary of lessons from tracking India's social protection response to COVID-19".
+
+Doing this will help establish if I am applying the weights correctly for analysing the CMIE's data. 
+
+# Which datasets are is used?
+
+Looking at all the data shared by the WB, it seems that the results in the paper are produced using the CSM module. WB has provided with CSM 1-7. At this stage I am unsure if the results are generated using all 7 waves or a select number of wave from these 7.
+
+We will be using the responses to the household frame to this module as the questions/results of interest are in HH frame.
+
+
+```{r libraries}
+#| include: false
+#| message: false
+#| warning: false
+
+library(here) # to handle addresses
+library(dplyr) # data wrangling
+
+```
+
+# Are questions same across CSM1-CSM7
+
+The data set of the CSM module is provided in 8 csv files. Collected across 7 waves (CSM1-7). We are responses to the HH frame of this module. 
+
+It is possible that the number of questions, the questions and their sequencing was changed during the execution of these modules. It  would be sane to check this before merging the data and generating results from it. 
+
+One way to check this is to read the 7 questionnaires and list and compare the questions in the household frame. This will take time. Alternatively, I can read the data from the 8 csv files and compare column names and number of column. The drawback ^[This seems like a reasonable risk to take for this exercise] of the alternate method is that we wont know if there are subtle changes in the manner a question is asked across waves and the number of questions and column names are not changed. 
+
+## Import data and ckeck
+
+```{r imp-check}
+#| warning: false
+#| message: false
+
+
+# Get column names of all 8 files and compare
+
+## list all files and create addresses
+
+paste0("data/data-csm/",
+       list.files("data/data-csm/"),
+       sep ="") -> files_addresses
+
+## read these files and extract column names
+
+purrr::map(files_addresses,
+           .f = ~readr::read_csv(file = .x,
+                                n_max = 10)|>
+             names(),
+             ) -> files_col_names
+
+
+names(files_col_names) <- paste0("CSM",
+                                 c("1","2","3","4",
+                                   "5","6","7a","7b"))
+
+```
+
+```{r num-col}
+tibble(
+  `CSM Wave` = purrr::map_dbl(
+    files_col_names,length
+    )|>
+    names(),
+  `Number of Questions/Columns` = purrr::map_dbl(
+    files_col_names,length
+    )
+)|>
+  gt::gt()
+
+
+```
+
