@@ -121,51 +121,28 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <div class="cell">
 <details>
 <summary>Code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Get column names of all 8 files and compare</span></span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="do">## list all files and create addresses</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">paste0</span>(<span class="st">"data/data-csm/"</span>,</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>       <span class="fu">list.files</span>(<span class="st">"data/data-csm/"</span>),</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>       <span class="at">sep =</span><span class="st">""</span>) <span class="ot">-&gt;</span> files_addresses</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="do">## read these files and extract column names</span></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>purrr<span class="sc">::</span><span class="fu">map</span>(files_addresses,</span>
-<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>           <span class="at">.f =</span> <span class="sc">~</span>readr<span class="sc">::</span><span class="fu">read_csv</span>(<span class="at">file =</span> .x,</span>
-<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                                <span class="at">n_max =</span> <span class="dv">10</span>)<span class="sc">|&gt;</span></span>
-<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>             <span class="fu">names</span>(),</span>
-<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>             ) <span class="ot">-&gt;</span> files_col_names</span>
-<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(files_col_names) <span class="ot">&lt;-</span> <span class="fu">paste0</span>(<span class="st">"CSM"</span>,</span>
-<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                                 <span class="fu">c</span>(<span class="st">"1"</span>,<span class="st">"2"</span>,<span class="st">"3"</span>,<span class="st">"4"</span>,</span>
-<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"5"</span>,<span class="st">"6"</span>,<span class="st">"7a"</span>,<span class="st">"7b"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p><strong>Number of columns/questions in each wave.</strong></p>
-<div class="cell">
-<details>
-<summary>Code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">CSM Wave</span><span class="st">`</span> <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_dbl</span>(</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    files_col_names,length</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    )<span class="sc">|&gt;</span></span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">names</span>(),</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Number of Questions/Columns</span><span class="st">`</span> <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_dbl</span>(</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    files_col_names,length</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>)<span class="sc">|&gt;</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">tibble</span>(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">CSM Wave</span><span class="st">`</span> <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_dbl</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    files_col_names,length</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    )<span class="sc">|&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">names</span>(),</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">`</span><span class="at">Number of Questions/Columns</span><span class="st">`</span> <span class="ot">=</span> purrr<span class="sc">::</span><span class="fu">map_dbl</span>(</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    files_col_names,length</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>)<span class="sc">|&gt;</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>()<span class="sc">|&gt;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">cols_align</span>(<span class="at">align =</span> <span class="st">"center"</span>)<span class="sc">|&gt;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">tab_header</span>(<span class="at">title =</span> <span class="st">"Question/Columns across CSM Waves"</span>,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">subtitle =</span> <span class="st">"Note that CSM 7 had two data files"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 <div class="cell-output-display">
 
-<div id="xnjhpuvqqi" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<div id="wcksqjdfnr" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
 <style>html {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', 'Fira Sans', 'Droid Sans', Arial, sans-serif;
 }
 
-#xnjhpuvqqi .gt_table {
+:where(#wcksqjdfnr) .gt_table {
   display: table;
   border-collapse: collapse;
   margin-left: auto;
@@ -190,7 +167,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-left-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_heading {
+:where(#wcksqjdfnr) .gt_heading {
   background-color: #FFFFFF;
   text-align: center;
   border-bottom-color: #FFFFFF;
@@ -202,12 +179,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_caption {
+:where(#wcksqjdfnr) .gt_caption {
   padding-top: 4px;
   padding-bottom: 4px;
 }
 
-#xnjhpuvqqi .gt_title {
+:where(#wcksqjdfnr) .gt_title {
   color: #333333;
   font-size: 125%;
   font-weight: initial;
@@ -219,7 +196,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-width: 0;
 }
 
-#xnjhpuvqqi .gt_subtitle {
+:where(#wcksqjdfnr) .gt_subtitle {
   color: #333333;
   font-size: 85%;
   font-weight: initial;
@@ -231,13 +208,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-width: 0;
 }
 
-#xnjhpuvqqi .gt_bottom_border {
+:where(#wcksqjdfnr) .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_col_headings {
+:where(#wcksqjdfnr) .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -252,7 +229,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_col_heading {
+:where(#wcksqjdfnr) .gt_col_heading {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -272,7 +249,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#xnjhpuvqqi .gt_column_spanner_outer {
+:where(#wcksqjdfnr) .gt_column_spanner_outer {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -284,15 +261,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 4px;
 }
 
-#xnjhpuvqqi .gt_column_spanner_outer:first-child {
+:where(#wcksqjdfnr) .gt_column_spanner_outer:first-child {
   padding-left: 0;
 }
 
-#xnjhpuvqqi .gt_column_spanner_outer:last-child {
+:where(#wcksqjdfnr) .gt_column_spanner_outer:last-child {
   padding-right: 0;
 }
 
-#xnjhpuvqqi .gt_column_spanner {
+:where(#wcksqjdfnr) .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
   border-bottom-color: #D3D3D3;
@@ -304,7 +281,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   width: 100%;
 }
 
-#xnjhpuvqqi .gt_group_heading {
+:where(#wcksqjdfnr) .gt_group_heading {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -330,7 +307,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   text-align: left;
 }
 
-#xnjhpuvqqi .gt_empty_group_heading {
+:where(#wcksqjdfnr) .gt_empty_group_heading {
   padding: 0.5px;
   color: #333333;
   background-color: #FFFFFF;
@@ -345,15 +322,15 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: middle;
 }
 
-#xnjhpuvqqi .gt_from_md > :first-child {
+:where(#wcksqjdfnr) .gt_from_md > :first-child {
   margin-top: 0;
 }
 
-#xnjhpuvqqi .gt_from_md > :last-child {
+:where(#wcksqjdfnr) .gt_from_md > :last-child {
   margin-bottom: 0;
 }
 
-#xnjhpuvqqi .gt_row {
+:where(#wcksqjdfnr) .gt_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -372,7 +349,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   overflow-x: hidden;
 }
 
-#xnjhpuvqqi .gt_stub {
+:where(#wcksqjdfnr) .gt_stub {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -385,7 +362,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#xnjhpuvqqi .gt_stub_row_group {
+:where(#wcksqjdfnr) .gt_stub_row_group {
   color: #333333;
   background-color: #FFFFFF;
   font-size: 100%;
@@ -399,11 +376,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   vertical-align: top;
 }
 
-#xnjhpuvqqi .gt_row_group_first td {
+:where(#wcksqjdfnr) .gt_row_group_first td {
   border-top-width: 2px;
 }
 
-#xnjhpuvqqi .gt_summary_row {
+:where(#wcksqjdfnr) .gt_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -413,16 +390,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#xnjhpuvqqi .gt_first_summary_row {
+:where(#wcksqjdfnr) .gt_first_summary_row {
   border-top-style: solid;
   border-top-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_first_summary_row.thick {
+:where(#wcksqjdfnr) .gt_first_summary_row.thick {
   border-top-width: 2px;
 }
 
-#xnjhpuvqqi .gt_last_summary_row {
+:where(#wcksqjdfnr) .gt_last_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -432,7 +409,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_grand_summary_row {
+:where(#wcksqjdfnr) .gt_grand_summary_row {
   color: #333333;
   background-color: #FFFFFF;
   text-transform: inherit;
@@ -442,7 +419,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#xnjhpuvqqi .gt_first_grand_summary_row {
+:where(#wcksqjdfnr) .gt_first_grand_summary_row {
   padding-top: 8px;
   padding-bottom: 8px;
   padding-left: 5px;
@@ -452,11 +429,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-top-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_striped {
+:where(#wcksqjdfnr) .gt_striped {
   background-color: rgba(128, 128, 128, 0.05);
 }
 
-#xnjhpuvqqi .gt_table_body {
+:where(#wcksqjdfnr) .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
   border-top-color: #D3D3D3;
@@ -465,7 +442,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-bottom-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_footnotes {
+:where(#wcksqjdfnr) .gt_footnotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -479,7 +456,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_footnote {
+:where(#wcksqjdfnr) .gt_footnote {
   margin: 0px;
   font-size: 90%;
   padding-left: 4px;
@@ -488,7 +465,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#xnjhpuvqqi .gt_sourcenotes {
+:where(#wcksqjdfnr) .gt_sourcenotes {
   color: #333333;
   background-color: #FFFFFF;
   border-bottom-style: none;
@@ -502,7 +479,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   border-right-color: #D3D3D3;
 }
 
-#xnjhpuvqqi .gt_sourcenote {
+:where(#wcksqjdfnr) .gt_sourcenote {
   font-size: 90%;
   padding-top: 4px;
   padding-bottom: 4px;
@@ -510,115 +487,106 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   padding-right: 5px;
 }
 
-#xnjhpuvqqi .gt_left {
+:where(#wcksqjdfnr) .gt_left {
   text-align: left;
 }
 
-#xnjhpuvqqi .gt_center {
+:where(#wcksqjdfnr) .gt_center {
   text-align: center;
 }
 
-#xnjhpuvqqi .gt_right {
+:where(#wcksqjdfnr) .gt_right {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-#xnjhpuvqqi .gt_font_normal {
+:where(#wcksqjdfnr) .gt_font_normal {
   font-weight: normal;
 }
 
-#xnjhpuvqqi .gt_font_bold {
+:where(#wcksqjdfnr) .gt_font_bold {
   font-weight: bold;
 }
 
-#xnjhpuvqqi .gt_font_italic {
+:where(#wcksqjdfnr) .gt_font_italic {
   font-style: italic;
 }
 
-#xnjhpuvqqi .gt_super {
+:where(#wcksqjdfnr) .gt_super {
   font-size: 65%;
 }
 
-#xnjhpuvqqi .gt_footnote_marks {
+:where(#wcksqjdfnr) .gt_footnote_marks {
   font-style: italic;
   font-weight: normal;
   font-size: 75%;
   vertical-align: 0.4em;
 }
 
-#xnjhpuvqqi .gt_asterisk {
+:where(#wcksqjdfnr) .gt_asterisk {
   font-size: 100%;
   vertical-align: 0;
 }
 
-#xnjhpuvqqi .gt_indent_1 {
+:where(#wcksqjdfnr) .gt_indent_1 {
   text-indent: 5px;
 }
 
-#xnjhpuvqqi .gt_indent_2 {
+:where(#wcksqjdfnr) .gt_indent_2 {
   text-indent: 10px;
 }
 
-#xnjhpuvqqi .gt_indent_3 {
+:where(#wcksqjdfnr) .gt_indent_3 {
   text-indent: 15px;
 }
 
-#xnjhpuvqqi .gt_indent_4 {
+:where(#wcksqjdfnr) .gt_indent_4 {
   text-indent: 20px;
 }
 
-#xnjhpuvqqi .gt_indent_5 {
+:where(#wcksqjdfnr) .gt_indent_5 {
   text-indent: 25px;
 }
 </style>
-
-<table class="gt_table table table-sm table-striped small" data-quarto-postprocess="true">
-<thead class="gt_col_headings">
-<tr class="header">
-<th id="CSM Wave" class="gt_col_heading gt_columns_bottom_border gt_left" data-quarto-table-cell-role="th" scope="col">CSM Wave</th>
-<th id="Number of Questions/Columns" class="gt_col_heading gt_columns_bottom_border gt_right" data-quarto-table-cell-role="th" scope="col">Number of Questions/Columns</th>
-</tr>
-</thead>
-<tbody class="gt_table_body">
-<tr class="odd">
-<td class="gt_row gt_left" headers="CSM Wave">CSM1</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">76</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="CSM Wave">CSM2</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">92</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="CSM Wave">CSM3</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">135</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="CSM Wave">CSM4</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">118</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="CSM Wave">CSM5</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">152</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="CSM Wave">CSM6</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">141</td>
-</tr>
-<tr class="odd">
-<td class="gt_row gt_left" headers="CSM Wave">CSM7a</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">118</td>
-</tr>
-<tr class="even">
-<td class="gt_row gt_left" headers="CSM Wave">CSM7b</td>
-<td class="gt_row gt_right" headers="Number of Questions/Columns">119</td>
-</tr>
-</tbody>
+<table class="gt_table">
+  <thead class="gt_header">
+    <tr>
+      <td colspan="2" class="gt_heading gt_title gt_font_normal" style="">Question/Columns across CSM Waves</td>
+    </tr>
+    <tr>
+      <td colspan="2" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="">Note that CSM 7 had two data files</td>
+    </tr>
+  </thead>
+  <thead class="gt_col_headings">
+    <tr>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="CSM Wave">CSM Wave</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="Number of Questions/Columns">Number of Questions/Columns</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM1</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">76</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM2</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">92</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM3</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">135</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM4</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">118</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM5</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">152</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM6</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">141</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM7a</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">118</td></tr>
+    <tr><td headers="CSM Wave" class="gt_row gt_center">CSM7b</td>
+<td headers="Number of Questions/Columns" class="gt_row gt_center">119</td></tr>
+  </tbody>
+  
+  
 </table>
-
 </div>
 </div>
 </div>
-<p><em>Note that CSM 7 folder has two data files.</em></p>
 </section>
 </section>
 
