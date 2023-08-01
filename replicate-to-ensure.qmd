@@ -112,3 +112,29 @@ analysis (even though the survey captures this
 information) because of the smaller proportion of
 households that are enrolled in the program."
 :::
+
+
+```{r import-csm6}
+#| include: false
+#| warning: false
+#| message: false
+#| cache: true
+
+## read in the csm 6 responses 
+
+readr::read_csv("data/data-csm/wb_hh_data_20220430.csv") -> csm6
+
+```
+
+A little peek into the data:
+
+```{r}
+csm6|>
+  head(10)|>
+  knitr::kable()|>
+  kableExtra::kable_styling()|>
+  kableExtra::scroll_box(width = "100%",
+                         height = "400px")
+  
+```
+
