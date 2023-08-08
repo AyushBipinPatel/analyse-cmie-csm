@@ -278,6 +278,7 @@ I will attempt to reproduce these partial results below:
 
 csm1|>
   mutate(
+    w_hh_w = hh_weight_w * hh_non_response_w,
     ele_food = ifelse(
       type_of_ration_card %in% c("BPL/Antodaya/Annapurna","Other"),
       1,0
@@ -287,6 +288,10 @@ csm1|>
         hh_enrolled_in_lpg_scheme == "Yes" | 
         hh_enrolled_in_pension_scheme == "Yes" | 
         hh_enrolled_in_pm_kisan_scheme == "Yes",
+      1,0
+    ),
+    ele_pf = ifelse(
+      hh_enrolled_in_pf_scheme == "Yes",
       1,0
     ),
     food_ben = ifelse(
@@ -301,6 +306,10 @@ csm1|>
         !(received_amt_in_rs_from_lpg_scheme  %in% c("0","Not Applicable"))|
         !(received_amt_in_rs_from_pension_scheme %in% c("0","Not Applicable")),
       1,0
+    ),
+    pf_ben = ifelse(
+      !(received_amt_in_rs_from_pf_scheme %in% c("0","Not Applicable")),
+      1,0
     )
   ) -> csm1
 
@@ -309,31 +318,21 @@ csm1|>
 ### Food only
 
 csm1|>
-  filter(ele_food == 1)|>
-  mutate(
-    only_food_ben = ifelse(
-      food_ben ==1 ,
-      1,0
-    )
-  )|>
+  filter(ele_food == 1 & ele_cash == 0 & ele_pf == 0)|>
   summarise(
-    perc_only_food_ben = weighted.mean(only_food_ben, w_cntry)
+    perc_only_food_ben = weighted.mean(food_ben, w_cntry)
   ) -> ai_food_only
 
+### cash only
+
 csm1|>
-  filter(ele_cash == 1)|>
-  mutate(
-    only_cash_ben = ifelse(
-      cash_ben ==1 ,
-      1,0
-    )
-  )|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
   summarise(
-    perc_only_cash_ben = weighted.mean(only_cash_ben, w_cntry)
+    perc_only_cash_ben = weighted.mean(cash_ben, w_cntry)
   ) -> ai_cash_only
 
 csm1|>
-  filter(ele_cash == 1 & ele_food == 1)|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
   mutate(
     only_food_and_cash_ben = ifelse(
       cash_ben ==1 & food_ben == 1,
@@ -347,33 +346,21 @@ csm1|>
 ## Region summaries
 
 csm1|>
-  filter(ele_food == 1)|>
-  mutate(
-    only_food_ben = ifelse(
-      food_ben ==1 ,
-      1,0
-    )
-  )|>
+  filter(ele_food == 1 & ele_cash == 0 & ele_pf == 0)|>
   group_by(region_type)|>
   summarise(
-    perc_only_food_ben = weighted.mean(only_food_ben, w_cntry)
+    perc_only_food_ben = weighted.mean(food_ben, w_cntry)
   ) -> r_food_only
 
 csm1|>
-  filter(ele_cash == 1)|>
-  mutate(
-    only_cash_ben = ifelse(
-      cash_ben ==1 ,
-      1,0
-    )
-  )|>
+  filter(ele_food == 0 & ele_cash == 1 & ele_pf == 0)|>
   group_by(region_type)|>
   summarise(
-    perc_only_cash_ben = weighted.mean(only_cash_ben, w_cntry)
+    perc_only_cash_ben = weighted.mean(cash_ben, w_cntry)
   ) -> r_cash_only
 
 csm1|>
-  filter(ele_cash == 1 & ele_food == 1)|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
   mutate(
     only_food_and_cash_ben = ifelse(
       cash_ben ==1 & food_ben == 1,
@@ -404,14 +391,99 @@ tibble(
   gt::gt()|>
   gt::cols_align(align = "center")|>
   gt::tab_header(title = "REPRODUCED::Table 2 : Eligible Households Receiving Benefits under PMGKY of WB paper",
-                 subtitle = "Partial table is presented")
+                 subtitle = "Partial table is presented | with hh weights for country")
 
 ```
 
-:::{.callout-warning}
-### Unsuccessful replication for Table 2
+```{r weights_adjustment}
+## All India results
 
-Need to cross check eligibility definitions with WB.
+### Food only
 
-This could be because of how Food only or Cash Only are defined. need to cross check if I have done it the same way as WB paper.
+csm1|>
+  filter(ele_food == 1 & ele_cash == 0 & ele_pf == 0)|>
+  summarise(
+    perc_only_food_ben = weighted.mean(food_ben, w_hh_w)
+  ) -> ai_food_only
+
+### cash only
+
+csm1|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
+  summarise(
+    perc_only_cash_ben = weighted.mean(cash_ben, w_hh_w)
+  ) -> ai_cash_only
+
+csm1|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
+  mutate(
+    only_food_and_cash_ben = ifelse(
+      cash_ben ==1 & food_ben == 1,
+      1,0
+    )
+  )|>
+  summarise(
+    perc_only_food_and_cash_ben = weighted.mean(only_food_and_cash_ben, w_hh_w)
+  ) -> ai_food_and_cash_only
+
+## Region summaries
+
+csm1|>
+  filter(ele_food == 1 & ele_cash == 0 & ele_pf == 0)|>
+  group_by(region_type)|>
+  summarise(
+    perc_only_food_ben = weighted.mean(food_ben, w_hh_w)
+  ) -> r_food_only
+
+csm1|>
+  filter(ele_food == 0 & ele_cash == 1 & ele_pf == 0)|>
+  group_by(region_type)|>
+  summarise(
+    perc_only_cash_ben = weighted.mean(cash_ben, w_hh_w)
+  ) -> r_cash_only
+
+csm1|>
+  filter(ele_food == 1 & ele_cash == 1 & ele_pf == 0)|>
+  mutate(
+    only_food_and_cash_ben = ifelse(
+      cash_ben ==1 & food_ben == 1,
+      1,0
+    )
+  )|>
+  group_by(region_type)|>
+  summarise(
+    perc_only_food_and_cash_ben = weighted.mean(only_food_and_cash_ben, w_hh_w)
+  ) -> r_food_and_cash_only
+
+## create table
+
+tibble(
+  `Share of Eligible Households Who have Received Benefits` = c(
+    "Food Only", "Cash Only", "Food and cash Only"
+  ),
+  `All-India` = c(ai_food_only$perc_only_food_ben[1],
+                  ai_cash_only$perc_only_cash_ben[1],
+                  ai_food_and_cash_only$perc_only_food_and_cash_ben[1]),
+  `Rural` = c(r_food_only$perc_only_food_ben[1],
+              r_cash_only$perc_only_cash_ben[1],
+              r_food_and_cash_only$perc_only_food_and_cash_ben[1]),
+  `Urban` = c(r_food_only$perc_only_food_ben[2],
+              r_cash_only$perc_only_cash_ben[2],
+              r_food_and_cash_only$perc_only_food_and_cash_ben[2])
+)|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "REPRODUCED::Table 2 : Eligible Households Receiving Benefits under PMGKY of WB paper",
+                 subtitle = "Partial table is presented | with hh weights for wave")
+
+```
+
+
+
+:::{.callout-tip}
+### Successful replication for Table 2
+
+Successful replication on the second attempt after referring to the files shared by Sutirtha. Sutirtha has used wave level weights, I was using country level weights.
+
+Interesting to note that most results match regardless of country or wave level weights, except for the results related to cash benefits.
 :::
