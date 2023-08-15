@@ -133,7 +133,7 @@ get_means <- function(data, interest_var,
                                       weights = .data[[w]])
     )|>
     mutate(
-      age_group = interest_val
+      {{interest_var}} := interest_val
     )
   
   }else{
@@ -150,7 +150,7 @@ get_means <- function(data, interest_var,
                                       weights = .data[[w]])
     )|>
     mutate(
-      age_group = interest_val
+      {{interest_var}} := interest_val
     )
     }else{ # State
       data|>
@@ -165,7 +165,7 @@ get_means <- function(data, interest_var,
                                       weights = .data[[w]])
     )|>
     mutate(
-      age_group = interest_val
+      {{interest_var}} := interest_val
     )
     }
   
@@ -252,7 +252,7 @@ purrr::pmap_dfr(.l = list(
 
 
 state_perc_hh_age_group|>
-  ggplot(aes(age_group,Perc_HH))+
+  ggplot(aes(AGE_GROUP,Perc_HH))+
   ggiraph::geom_jitter_interactive(aes(
     colour = ifelse(
     STATE == "Maharashtra",
@@ -260,14 +260,14 @@ state_perc_hh_age_group|>
     "#919ba5"
   ),
   tooltip = paste(
-    age_group," households in",STATE,":",Perc_HH,"%")
+    AGE_GROUP," households in",STATE,":",Perc_HH,"%")
   ),
               size = 10,
               alpha = 0.8)+
   scale_colour_viridis_d()+
   guides(colour = "none")+
   geom_jitter(data = national_age_group_perc,
-              aes(age_group, Perc_HH),
+              aes(AGE_GROUP, Perc_HH),
               shape = 23,
               size = 15,
               alpha = 0.8,
@@ -295,13 +295,21 @@ Below is the Urban and Rural breakup for Maharashtra households across age group
 
 ```{r maha-u-r-ag}
 purrr::pmap_dfr(.l = list(
-  data = list(data_household_incomes,data_household_incomes|>
+  data = list(data_household_incomes|>
                 filter(STATE == "Maharashtra"),
-              data_household_incomes,data_household_incomes|>
+              data_household_incomes|>
                 filter(STATE == "Maharashtra"),
-              data_household_incomes,data_household_incomes|>
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
                 filter(STATE == "Maharashtra"),
-              data_household_incomes,data_household_incomes|>
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
                 filter(STATE == "Maharashtra")),
   interest_var = rep("AGE_GROUP",8),
   interest_val = all_age_groups,
@@ -319,6 +327,215 @@ purrr::pmap_dfr(.l = list(
   gt::gt()|>
   gt::cols_align(align = "center")|>
   gt::tab_header(title = "Table 3 : Maharashtra - Percentage HH in Various Age Groups with Rural - Urban Breakup")
+
+```
+
+### Occupation Group
+
+We begin by creating country level estimates for various Occupation-Groups.
+
+```{r cntry-og}
+
+data_household_incomes|>
+  pull(OCCUPATION_GROUP)|>
+  unique() -> all_occ_groups
+
+# calculate country level estimates for all values of Occupation_GROUP
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("OCCUPATION_GROUP",19),
+  interest_val = all_occ_groups,
+  w = rep("w_cntry",19)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH)) -> national_occ_group_perc
+
+# National Rural Urban breakup of AGE Group
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("OCCUPATION_GROUP",19),
+  interest_val = all_occ_groups,
+  w = rep("w_cntry",19),
+  R_U = rep(1,19)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH))|>
+  pivot_wider(names_from = REGION_TYPE,values_from = Perc_HH)-> national_occ_group_perc_ru
+
+## Show both national level tables
+
+
+
+national_occ_group_perc_ru|>
+  mutate(
+    National = national_occ_group_perc$Perc_HH
+  )|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 4 : National - Percentage HH in Various Occupation Groups with Rural - Urban Breakup")
+
+```
+
+The following chart shows the spread of percentage of households across occupation groups for all states in India. __Maharashtra is in Yellow.__
+
+```{r state-level-og}
+#| column: page
+#| fig-align: center
+#| fig-width: 40
+#| fig-height: 40
+#| fig-subcap: This chart is interactive. Hover your mouse over the chart to see details.
+#| fig-cap: State level estimates are generated using state weights and Country level estimates are using country weights.
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("OCCUPATION_GROUP",19),
+  interest_val = all_occ_groups,
+  w = rep("w_state",19),
+  R_U = rep(2,19)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )-> state_perc_hh_occ_group
+
+
+state_perc_hh_occ_group|>
+  ggplot(aes(OCCUPATION_GROUP,Perc_HH))+
+  ggiraph::geom_jitter_interactive(aes(
+    colour = ifelse(
+    STATE == "Maharashtra",
+    "#ffca05",
+    "#919ba5"
+  ),
+  tooltip = paste(
+    OCCUPATION_GROUP," households in",STATE,":",Perc_HH,"%")
+  ),
+              size = 10,
+              alpha = 0.8)+
+  scale_colour_viridis_d()+
+  guides(colour = "none")+
+  geom_jitter(data = national_occ_group_perc,
+              aes(OCCUPATION_GROUP, Perc_HH),
+              shape = 23,
+              size = 15,
+              alpha = 0.8,
+              fill = "#2ca25f")+
+  coord_flip()+
+  labs(
+    title = "Percentage of HH across various Occupation Groups",
+    subtitle = "The diamond in green is the national average",
+    x = NULL,
+    y = "% households"
+  )+
+  theme_bw()+
+  theme(
+    title = element_text(size = 50,face = "bold"),
+    axis.title = element_text(size = 35),
+    axis.text = element_text(size = 25)
+  )-> p2
+
+ggiraph::girafe(ggobj = p2)
+
+```
+
+
+Below is the Urban and Rural breakup for Maharashtra households across Occupation groups.
+
+```{r maha-u-r-og}
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ,data_household_incomes|>
+                filter(STATE == "Maharashtra")
+              ),
+  interest_var = rep("OCCUPATION_GROUP",19),
+  interest_val = all_occ_groups,
+  w = rep("w_state",19),
+  R_U = rep(1,19)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH))|>
+  pivot_wider(names_from = REGION_TYPE,
+              values_from = Perc_HH)|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 5 : Maharashtra - Percentage HH in Various Occupation Groups with Rural - Urban Breakup")
 
 ```
 
