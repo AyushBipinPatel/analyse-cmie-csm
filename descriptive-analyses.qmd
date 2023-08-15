@@ -1,0 +1,324 @@
+---
+title: "Descriptive Analyses - CMIE data"
+author: "Ayush Patel"
+date: "August, 15 2023"
+self-contained: true
+execute: 
+  warning: false
+format:
+  html:
+    code-fold: true
+---
+
+# Descriptive Analyses of CMIE data
+
+This document is created to carry out descriptive analyses of CMIE data in order to understand and record various aspects of households and individuals who are involved in or closely related to casual or informal labour.
+
+In this document I will try to provide, if feasible, comparisons and cross sections with the Urban-Rural, India-Maharashtra, Agri Labour - non Agri Labour lens.
+
+```{r libr-data}
+#| include: false
+
+# Libraries
+
+library(here)
+library(dplyr)
+library(tidyr)
+library(DescTools)
+library(ggplot2)
+
+# Data sets
+
+readr::read_csv(here("data/data-for-descriptive-analysis/household_income_20230228_MS.csv")) ->  data_household_incomes
+
+
+# keep response that are complete and create weights
+
+data_household_incomes|>
+  filter(RESPONSE_STATUS == "Accepted")|>
+  mutate(
+    w_cntry = HH_WEIGHT_FOR_COUNTRY_MS * HH_NON_RESPONSE_FOR_COUNTRY_MS,
+    w_state = HH_WEIGHT_FOR_STATE_MS * HH_NON_RESPONSE_FOR_STATE_MS
+  ) -> data_household_incomes
+
+```
+
+
+# Household Incomes
+
+Below is the CMIE's intro note for the Household Incomes data.
+
+>Income Pyramidsdx presents monthly time-series of income of sample households and its composition by sources. The sources of income include wages and pensions earned by members, dividends earned by them on equity investments, interest on savings and income from deposits, provident fund and insurance. It also includes household income from rent, transfers, business profits and sale of assets.
+
+We are using the file `household_income_20230228_MS.csv` form the Jan 23 - Feb 23 round.
+
+## Variables of Interest - Household Income
+
+Below listed are the variables/columns^[I will be using the words variables and columns interchangeably.] available in the household incomes data set. Along with the names of the variables, I also provide, for a select variables of interest, description that CMIE Provides on their website.
+
+```{r show-cols}
+#| column: margin
+
+# show all the columns of the household incomes data set
+
+data_household_incomes |>
+  names() -> var_names
+
+var_names # show all variable names
+
+```
+
+```{r show-def}
+tibble(
+  Variables = var_names[c(1,2,5,12,19:22)],
+  `CMIE Definitions` = c(
+    "Each household that is a part of the sample, is assigned a unique identity number. An identity number assigned to a particular household is never assigned to any other household. Not even if we replace one household in the sample with another.",
+    "This is the State or Union Territory in which the sample household is located.",
+    "Type of region indicates whether a household is in rural regions or in urban regions. A household is considered to be in a rural region if it is located in a village according to the 2011 Census. Similarly a household is considered to be in an urban region if it is located in a town according to the 2011 Census.",
+    "This data field, when marked “Y”, indicates that the earlier residents of the households have been replaced by a new set of residents because the earlier residents have moved out and a new set of residents have moved in.",
+    "Households are classified as belonging to one of the following groups.
+
+Children - dominant
+Youngsters - dominant
+Other households of the Young
+Grown-up - dominant
+Seniors - dominant
+Other households of Grown-ups
+Balanced households with Seniors
+Balanced households with no Seniors",
+"Households are classified as belonging to one of the 25 income groups.*",
+"A rule-based classification that takes into account all members of a household is better than classifying a household only on the basis of the occupation of a single member - usually the head of the household.
+
+Households are classified as belonging to one of the 20 occupation groups*",
+"Households are classified as belonging to one of the 11 education groups.*"
+    
+  )
+)|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 1 : Variables of interest with description",
+                 subtitle = "Descriptions are copied or paraphrased from CMIE website")
+```
+
+
+## Summaries on variables of interest
+
+Here with this data set we have five variables that classify a given household in five different ways. We will look at summaries for these five variables.
+
+### Age Group
+
+We begin by creating country level estimates for various Age-Groups.
+
+```{r cntry-ag}
+
+data_household_incomes|>
+  pull(AGE_GROUP)|>
+  unique() -> all_age_groups
+
+## function to calculate the mean of a value in a grouping variable
+
+get_means <- function(data, interest_var, 
+                      interest_val, w,
+                      R_U = 0){
+  
+  if(R_U == 0){ # National
+    data|>
+    mutate(
+      if_interest_val = ifelse(
+       .data[[interest_var]] == interest_val,
+                               1,0)
+    )|>
+    summarise(
+      "Perc_HH" := Mean(if_interest_val,
+                                      weights = .data[[w]])
+    )|>
+    mutate(
+      age_group = interest_val
+    )
+  
+  }else{
+    if(R_U == 1){ # National - Rural/Urban
+      data|>
+    mutate(
+      if_interest_val = ifelse(
+       .data[[interest_var]] == interest_val,
+                               1,0)
+    )|>
+    group_by(REGION_TYPE)|>
+    summarise(
+      "Perc_HH" := Mean(if_interest_val,
+                                      weights = .data[[w]])
+    )|>
+    mutate(
+      age_group = interest_val
+    )
+    }else{ # State
+      data|>
+    mutate(
+      if_interest_val = ifelse(
+       .data[[interest_var]] == interest_val,
+                               1,0)
+    )|>
+    group_by(STATE)|>
+    summarise(
+      "Perc_HH" := Mean(if_interest_val,
+                                      weights = .data[[w]])
+    )|>
+    mutate(
+      age_group = interest_val
+    )
+    }
+  
+  }
+}
+
+# calculate country level estimates for all values of AGE_GROUP
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("AGE_GROUP",8),
+  interest_val = all_age_groups,
+  w = rep("w_cntry",8)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH)) -> national_age_group_perc
+
+# National Rural Urban breakup of AGE Group
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("AGE_GROUP",8),
+  interest_val = all_age_groups,
+  w = rep("w_cntry",8),
+  R_U = rep(1,8)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH))|>
+  pivot_wider(names_from = REGION_TYPE,values_from = Perc_HH)-> national_age_group_perc_ru
+
+## Show both national level tables
+
+
+
+national_age_group_perc_ru|>
+  mutate(
+    National = national_age_group_perc$Perc_HH
+  )|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 2 : National - Percentage HH in Various Age Groups with Rural - Urban Breakup")
+
+```
+
+The following chart shows the spread of percentage of households across age groups for all states in India. __Maharashtra is in Yellow.__
+
+```{r state-level-ag}
+#| column: page
+#| fig-align: center
+#| fig-width: 40
+#| fig-height: 20
+#| fig-subcap: This chart is interactive. Hover your mouse over the chart to see details.
+#| fig-cap: State level estimates are generated using state weights and Country level estimates are using country weights.
+
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes,
+              data_household_incomes,data_household_incomes),
+  interest_var = rep("AGE_GROUP",8),
+  interest_val = all_age_groups,
+  w = rep("w_state",8),
+  R_U = rep(2,8)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )-> state_perc_hh_age_group
+
+
+state_perc_hh_age_group|>
+  ggplot(aes(age_group,Perc_HH))+
+  ggiraph::geom_jitter_interactive(aes(
+    colour = ifelse(
+    STATE == "Maharashtra",
+    "#ffca05",
+    "#919ba5"
+  ),
+  tooltip = paste(
+    age_group," households in",STATE,":",Perc_HH,"%")
+  ),
+              size = 10,
+              alpha = 0.8)+
+  scale_colour_viridis_d()+
+  guides(colour = "none")+
+  geom_jitter(data = national_age_group_perc,
+              aes(age_group, Perc_HH),
+              shape = 23,
+              size = 15,
+              alpha = 0.8,
+              fill = "#2ca25f")+
+  coord_flip()+
+  labs(
+    title = "Percentage of HH across various Age Groups",
+    subtitle = "The diamond in green is the national average",
+    x = NULL,
+    y = "% households"
+  )+
+  theme_bw()+
+  theme(
+    title = element_text(size = 50,face = "bold"),
+    axis.title = element_text(size = 35),
+    axis.text = element_text(size = 25)
+  )-> p1
+
+ggiraph::girafe(ggobj = p1)
+
+```
+
+
+Below is the Urban and Rural breakup for Maharashtra households across age groups.
+
+```{r maha-u-r-ag}
+purrr::pmap_dfr(.l = list(
+  data = list(data_household_incomes,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes,data_household_incomes|>
+                filter(STATE == "Maharashtra"),
+              data_household_incomes,data_household_incomes|>
+                filter(STATE == "Maharashtra")),
+  interest_var = rep("AGE_GROUP",8),
+  interest_val = all_age_groups,
+  w = rep("w_state",8),
+  R_U = rep(1,8)
+),
+.f = get_means 
+  )|>
+  mutate(
+    Perc_HH = round(Perc_HH*100,2)
+  )|>
+  arrange(desc(Perc_HH))|>
+  pivot_wider(names_from = REGION_TYPE,
+              values_from = Perc_HH)|>
+  gt::gt()|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 3 : Maharashtra - Percentage HH in Various Age Groups with Rural - Urban Breakup")
+
+```
+
