@@ -9,4 +9,4 @@ format: html
 This landing page will contain all analyses exercises related to the CMIE data for the Artha-WB Social Protection project for Maharashtra.
 
 + Replication Exercise of the WB paper by Shrayana and Sutirtha. [Click Here](replicate-to-ensure.html) to see the reproduced results.
-+ CMIE descriptive analysis
++ [CMIE descriptive analysis](descriptive-analyses.html)
