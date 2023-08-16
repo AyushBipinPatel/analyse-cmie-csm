@@ -7,6 +7,8 @@ execute:
   warning: false
 format:
   html:
+    comments:
+      hypothesis: true
     toc: true
     toc-location: right
     code-fold: true
