@@ -542,6 +542,38 @@ purrr::pmap_dfr(.l = list(
 
 ```
 
+:::{.callout-note}
+## wage labourers - 6.41% for Maharashtra
+
+A household is classified as that of wage labourers if it first qualifies as a household of small traders and daily wage labourers and having satisfied this condition, it also satisfies the condition that the number of wage labourers in the household is greater than the number of each of the following occupations - home based workers, small traders and hawkers and wage labourers.
+
+A household qualifies as a household of small traders and wage labourers if the number of small traders and wage labourers in the household is greater than the number of business persons; is greater than the number of salaried employees; is greater than the number of farmers and; is greater than the number of retired and the miscellaneous.
+:::
+
+:::{.callout-note}
+## Small/Marginal Farmers - 13.31% for Maharashtra
+
+A household is classified as that of small and marginal farmers if it first qualifies as a household of farmers and having satisfied this condition, it also satisfies the condition that the number of small and marginal farmers in the household is greater than the number of organised farmers.
+
+A household qualifies as a household of farmers if the number of farmers in the household is greater than the number of business persons; is greater than the number of salaried employees; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
+:::
+
+:::{.callout-note}
+
+## Self-employed Entrepreneurs - 14.49% for Maharashtra
+
+A household qualifies as a household of business persons if the number of business persons is greater than the number of salaried employees; is greater than the number of farmers; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
+:::
+
+:::{.callout-note}
+
+## Industrial workers - 7% for Maharashtra
+
+A household is classified as that of industrial workers if it first qualifies as a household of salaried employees and having satisfied this condition, it also satisfies the condition that the number of industrial workers in the household is greater than the number of each of the following occupations - managers and supervisors, white-collar professional employees, white-collar clerical employees and non-industrial technical workers and also that, the number of industrial workers is greater than or equal to the number of members of each of the following two types of occupations - support staff and, legislators, social workers and activists.
+
+A household qualifies as a household of salaried employees if the number of salaried employees is greater than the number of business persons; is greater than the number of farmers; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
+
+:::
 
 
 ### Education Group
