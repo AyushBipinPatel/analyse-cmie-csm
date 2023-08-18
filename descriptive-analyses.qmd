@@ -48,6 +48,7 @@ data_household_incomes|>
 ```
 
 
+
 # Household Incomes
 
 Below is the CMIE's intro note for the Household Incomes data.
@@ -582,9 +583,7 @@ A household qualifies as a household of business persons if the number of busine
 ## Industrial workers - 7% for Maharashtra
 
 A household is classified as that of industrial workers if it first qualifies as a household of salaried employees and having satisfied this condition, it also satisfies the condition that the number of industrial workers in the household is greater than the number of each of the following occupations - managers and supervisors, white-collar professional employees, white-collar clerical employees and non-industrial technical workers and also that, the number of industrial workers is greater than or equal to the number of members of each of the following two types of occupations - support staff and, legislators, social workers and activists.
-
 A household qualifies as a household of salaried employees if the number of salaried employees is greater than the number of business persons; is greater than the number of farmers; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
-
 :::
 
 
@@ -722,6 +721,115 @@ ggiraph::girafe(ggobj = p2)
 
 ```
 
+:::{.callout-important}
+
+## Unintutive Result? TL;DR - No, we did not look at composition.
+
+We notice that the chart shows that % of HHs in Maharashtra that are grouped as HH of all Literates is ~30%. This seems unintuitive. Moreover, states such as Rajasthan and Bihar are recording more higher proportions of HHs as HHs of Literates compared to Kerala.
+
+This is nothing to worry about, we forgot to look at composition of grouping for each state. Meaning, that while Bihar may have a higher proportion of HHs in All literates grouping, states like Kerala and Maharashtra have higher proportions in groups like majority or dominated by graduated or Matriculated. This makes sense. __Nothing to worry.__
+
+_See the table below to see state level results for HHs across all groups._
+:::
+
+```{r data-intuition-check-eg}
+
+data_household_incomes|>
+  mutate(
+    if_HH_all_litts = ifelse(
+      EDUCATION_GROUP == "Households of all literates",
+      1,0
+    ),
+    if_HH_major_dom_grads = ifelse(
+      EDUCATION_GROUP %in% c("Graduates majority household",
+        "Graduates dominated household"),
+      1,0
+    ),
+    if_HH_minor_grads = ifelse(
+      EDUCATION_GROUP == "Graduates minority household",
+      1,0
+    ),
+    if_HH_all_grads = ifelse(
+      EDUCATION_GROUP == "All Graduates household",
+      1,0
+    ),
+    if_HH_major_dom_matri = ifelse(
+      EDUCATION_GROUP %in% c("Matriculates majority household",
+        "Matriculates dominated household"),
+      1,0
+    ),
+    if_HH_minor_matri = ifelse(
+      EDUCATION_GROUP == "Matriculates minority householdd",
+      1,0
+    ),
+    if_HH_all_matri = ifelse(
+      EDUCATION_GROUP == "All Matriculates household",
+      1,0
+    ),
+    if_HH_some_litts = ifelse(
+      EDUCATION_GROUP == "Households of some literates",
+      1,0
+    ),
+    if_HH_all_illitts = ifelse(
+      EDUCATION_GROUP == "Households of all illiterates",
+      1,0
+    )
+  )|>
+  group_by(STATE)|>
+  summarise(
+    across(
+      .cols = starts_with(match = "if_HH_"),
+      .fns = ~round(Mean(.x, weights = w_state)*100,2)
+    )
+  )|>
+  reactable::reactable(defaultSorted = c("STATE",
+                                         "if_HH_all_litts",
+                                         "if_HH_minor_grads",
+                                         "if_HH_all_grads",
+                                         "if_HH_major_dom_grads",
+                                         "if_HH_all_matri",
+                                         "if_HH_major_dom_matri",
+                                         "if_HH_minor_matri",
+                                         "if_HH_some_litts",
+                                         "if_HH_all_illitts"),
+                       columns = list(
+                         
+                         
+                         if_HH_all_litts = reactable::colDef(
+                           name = "All Litts"
+                         ),
+                         if_HH_minor_grads = reactable::colDef(
+                           name = "Minority Grads"
+                         ),
+                         if_HH_all_grads = reactable::colDef(
+                           name = "All Grads"
+                         ),
+                         if_HH_major_dom_grads = reactable::colDef(
+                           name = "Major/dom Grads"
+                         ),
+                         if_HH_all_matri = reactable::colDef(
+                           name = "All Matri"
+                         ),
+                         if_HH_major_dom_matri = reactable::colDef(
+                           name = "Major/dom Matri"
+                         ),
+                         if_HH_minor_matri = reactable::colDef(
+                           name = "Minority Matri"
+                         ),
+                         if_HH_some_litts = reactable::colDef(
+                           name = "Some Litts"
+                         ),
+                         if_HH_all_illitts = reactable::colDef(
+                           name = "All illLitts"
+                         )
+                         
+                       ), 
+                       defaultPageSize = 28
+                       )
+
+
+```
+
 
 Below is the Urban and Rural breakup for Maharashtra households across Education groups.
 
@@ -770,6 +878,7 @@ purrr::pmap_dfr(.l = list(
   gt::tab_header(title = "Table 7 : Maharashtra - Percentage HH in Various Education Groups with Rural - Urban Breakup")
 
 ```
+
 
 
 
