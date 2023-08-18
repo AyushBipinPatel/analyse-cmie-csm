@@ -90,11 +90,21 @@ Seniors - dominant
 Other households of Grown-ups
 Balanced households with Seniors
 Balanced households with no Seniors",
-"Households are classified as belonging to one of the 25 income groups.*",
 "A rule-based classification that takes into account all members of a household is better than classifying a household only on the basis of the occupation of a single member - usually the head of the household.
 
 Households are classified as belonging to one of the 20 occupation groups*",
-"Households are classified as belonging to one of the 11 education groups.*"
+"Households are classified as belonging to one of the 11 education groups.*",
+"Since a household usually has a mix of members of the genders and the distribution may vary from being dominated by one gender to the other with many cases of a balanced distribution, the classification of a household into a particular gender-group is based on certain rules set by CMIE.
+
+Households are classified as belonging to one of the following gender groups.
+
+Only Males
+Male Dominated
+Male Majority
+Balanced
+Female Majority
+Female Dominated
+Only Females"
     
   )
 )|>
