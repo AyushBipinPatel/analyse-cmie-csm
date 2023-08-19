@@ -556,7 +556,7 @@ purrr::pmap_dfr(.l = list(
 ```
 
 :::{.callout-note}
-## wage labourers - 6.41% for Maharashtra
+#### wage labourers - 6.41% for Maharashtra
 
 A household is classified as that of wage labourers if it first qualifies as a household of small traders and daily wage labourers and having satisfied this condition, it also satisfies the condition that the number of wage labourers in the household is greater than the number of each of the following occupations - home based workers, small traders and hawkers and wage labourers.
 
@@ -564,7 +564,7 @@ A household qualifies as a household of small traders and wage labourers if the 
 :::
 
 :::{.callout-note}
-## Small/Marginal Farmers - 13.31% for Maharashtra
+#### Small/Marginal Farmers - 13.31% for Maharashtra
 
 A household is classified as that of small and marginal farmers if it first qualifies as a household of farmers and having satisfied this condition, it also satisfies the condition that the number of small and marginal farmers in the household is greater than the number of organised farmers.
 
@@ -573,14 +573,14 @@ A household qualifies as a household of farmers if the number of farmers in the 
 
 :::{.callout-note}
 
-## Self-employed Entrepreneurs - 14.49% for Maharashtra
+#### Self-employed Entrepreneurs - 14.49% for Maharashtra
 
 A household qualifies as a household of business persons if the number of business persons is greater than the number of salaried employees; is greater than the number of farmers; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
 :::
 
 :::{.callout-note}
 
-## Industrial workers - 7% for Maharashtra
+#### Industrial workers - 7% for Maharashtra
 
 A household is classified as that of industrial workers if it first qualifies as a household of salaried employees and having satisfied this condition, it also satisfies the condition that the number of industrial workers in the household is greater than the number of each of the following occupations - managers and supervisors, white-collar professional employees, white-collar clerical employees and non-industrial technical workers and also that, the number of industrial workers is greater than or equal to the number of members of each of the following two types of occupations - support staff and, legislators, social workers and activists.
 A household qualifies as a household of salaried employees if the number of salaried employees is greater than the number of business persons; is greater than the number of farmers; is greater than the number of small traders and daily wage labourers and; is greater than the number of retired and the miscellaneous.
@@ -723,7 +723,7 @@ ggiraph::girafe(ggobj = p2)
 
 :::{.callout-important}
 
-## Unintutive Result? TL;DR - No, we did not look at composition.
+#### Unintutive Result? TL;DR - No, we did not look at composition.
 
 We notice that the chart shows that % of HHs in Maharashtra that are grouped as HH of all Literates is ~30%. This seems unintuitive. Moreover, states such as Rajasthan and Bihar are recording more higher proportions of HHs as HHs of Literates compared to Kerala.
 
@@ -1050,4 +1050,232 @@ purrr::pmap_dfr(.l = list(
 
 ```
 
+
+## Income Quantiles
+
+This section will contain estimates of income quantiles at national and state level with Urban-Rural lens. 
+
+This section will also probe into distances between income quantiles of HHs grouped under various occupation groups.
+
+The CMIE data reports the `TOTAL_INCOME` of a household. The description of this indicator as provided on the CMIE website: 
+_"This is the total income of a household during a month. It is the summation of total income of every earning member and the income of the household collectively, which cannot be attributed to any individual member. This includes income received from all sources such as rent, income earned from self production, private transfers, wages, overtime, bonus, etc."_
+
+```{r def-fun-inq}
+
+get_inc_quantiles <- function(
+  level = "national", 
+  with_ur_lens = "no",
+  state
+  ){
+  
+  if(level == "national" & with_ur_lens == "no"){
+    
+    Quantile(data_household_incomes$TOTAL_INCOME,
+         weights = data_household_incomes$w_cntry)-> nat_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      national_inc = nat_inc_q
+    )
+    
+  }else if(level == "national" & with_ur_lens == "yes"){
+    
+    data_household_incomes|>
+      filter(REGION_TYPE == "RURAL")|>
+      pull(TOTAL_INCOME) -> nat_rural_inc
+    
+    data_household_incomes|>
+      filter(REGION_TYPE == "RURAL")|>
+      pull(w_cntry) -> nat_rural_w
+    
+    data_household_incomes|>
+      filter(REGION_TYPE == "URBAN")|>
+      pull(TOTAL_INCOME) -> nat_urban_inc
+    
+    data_household_incomes|>
+      filter(REGION_TYPE == "URBAN")|>
+      pull(w_cntry) -> nat_urban_w
+    
+    Quantile(
+      nat_rural_inc,
+      weights = nat_rural_w
+    ) -> nat_rural_inc_q
+    
+    Quantile(
+      nat_urban_inc,
+      weights = nat_urban_w
+    ) -> nat_urban_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      nat_rural_inc = nat_rural_inc_q,
+      nat_urban_inc = nat_urban_inc_q
+    )
+    
+  } else if(level != "national" & with_ur_lens == "no"){
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      pull(TOTAL_INCOME) -> state_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      pull(w_state) -> state_w
+    
+    Quantile(
+      state_inc,
+      weights = state_w
+    ) -> state_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      "{{state}}_inc" := state_inc_q
+    )
+    
+  }else{
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "RURAL")|>
+      pull(TOTAL_INCOME) -> sat_rural_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "RURAL")|>
+      pull(w_state) -> sat_rural_w
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "URBAN")|>
+      pull(TOTAL_INCOME) -> sat_urban_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "URBAN")|>
+      pull(w_state) -> sat_urban_w
+    
+    Quantile(
+      sat_rural_inc,
+      weights = sat_rural_w
+    ) -> sat_rural_inc_q
+    
+    Quantile(
+      sat_urban_inc,
+      weights = sat_urban_w
+    ) -> sat_urban_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      "{{state}}_rural_inc" := sat_rural_inc_q,
+      "{{state}}_urban_inc" := sat_urban_inc_q
+    )
+  }
+  
+}
+
+```
+
+
+### Naitonal Level
+
+```{r nat-incq}
+#| layout-nrow: 1
+#| column: body
+
+cbind(get_inc_quantiles(level = "national"),
+get_inc_quantiles(level = "national", 
+                  with_ur_lens = "yes"))|>
+  select(-3)|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 8 : National Income Quantiles")
+
+```
+
+```{r dist-incq-chart}
+#| column: page
+#| fig-align: center
+#| fig-width: 40
+#| fig-height: 25
+#| fig-cap: X-axis is transformed to a log10 scale.
+#| fig-subcap: Nearly 16.8 crore HH are spread in the area left of the verticle grey line and same number of HHs are spread on the right of the line.
+
+cbind(get_inc_quantiles(level = "national"),
+      get_inc_quantiles(level = "national", 
+                        with_ur_lens = "yes"))|>
+  select(-3)|>
+  pivot_longer(cols = -quantile,names_to = "Region",
+               values_to = "income")|>
+  mutate(
+    quantile = forcats::as_factor(quantile),
+    Region = case_when(
+      Region == "national_inc" ~ "National",
+      Region == "nat_urban_inc" ~ "National Urban Region",
+      Region == "nat_rural_inc" ~ "National Rural Region",
+    )
+  )|>
+  ggplot(aes(income,Region))+
+  ggiraph::geom_point_interactive(aes(colour = quantile,
+                             tooltip = paste(
+                               Region,":",
+                               quantile,"quantile is",
+                               income
+                             )),
+             size =15)+
+  scale_colour_manual(values = c("#141a28","#962e21","#dec000","#99b898","#347d39"), 
+                      name = "Quantiles")+
+  geom_vline(aes(xintercept = 17000),
+             shape = 2, colour = "#919ba5")+
+  scale_x_log10(
+    breaks = c(0,2.8^seq(0, 9, by = 1) * 100),
+    labels = scales::label_dollar(prefix = "Rs")
+  )+
+  labs(
+    title = "Distances between Income Quantiles",
+    subtitle = "50% of HHs at National level report total monthly incomes less than INR 17,000",
+    y = NULL,
+    x = "Income",
+    caption = "ज़िंदगी तू ने मुझे क़ब्र से कम दी है ज़मीं 
+
+पाँव फैलाऊँ तो दीवार में सर लगता है "
+  )+
+  theme_bw()+
+  theme(plot.title.position = 'plot',
+        title = element_text(size = 50,face = "bold"),
+        axis.title = element_text(size = 35),
+        axis.text = element_text(size = 25),
+        legend.text = element_text(size = 25)) -> p4
+
+ggiraph::girafe(ggobj = p4)
+
+```
+
+
+### State Level Comparisons 
+
+```{r sat-incq}
+purrr::pmap_dfc(.l = list(
+  level = rep("state",28),
+  with_ur_lens = rep("no",28),
+  state = unique(data_household_incomes$STATE)
+),
+.f = get_inc_quantiles) |>
+  janitor::clean_names()|>
+  rename(Quantiles = quantile_1)|>
+  select(!tidyselect::contains("quantile_"))|>
+  pivot_longer(cols = -Quantiles,
+               names_to = "State",
+               values_to = "Income" )|>
+  mutate(
+    State = stringr::str_to_title(
+      stringr::str_replace(
+        stringr::str_remove_all(State,"_inc"),
+        "_"," "
+      )),
+    State = ifelse(State == "Jammu Kashmir",
+                   "Jammu & Kashmir", State),
+    Quantiles = forcats::as_factor(Quantiles)
+  ) -> state_income_quantiles
+
+```
 
