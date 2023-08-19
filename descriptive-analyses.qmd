@@ -1279,3 +1279,46 @@ purrr::pmap_dfc(.l = list(
 
 ```
 
+```{r state-incq-comp-chart}
+#| column: screen
+#| fig-align: center
+#| fig-width: 40
+#| fig-height: 40
+#| fig-cap: X-axis is transformed to a log10 scale.
+
+state_income_quantiles|>
+  ggplot(aes(Income,State))+
+  ggiraph::geom_point_interactive(aes(colour = Quantiles,
+                             tooltip = paste(
+                               State,":",
+                               Quantiles,"quantile is",
+                               Income
+                             )),
+             size =15)+
+  scale_colour_manual(values = c("#141a28","#962e21","#dec000","#99b898","#347d39"), 
+                      name = "Quantiles")+
+  geom_vline(aes(xintercept = 17000),
+             shape = 2, colour = "#919ba5")+
+  scale_x_log10(
+    breaks = c(0,2.8^seq(0, 9, by = 1) * 100),
+    labels = scales::label_dollar(prefix = "Rs")
+  )+
+  labs(
+    title = "State comparisons - Distances between Income Quantiles",
+    subtitle = "Verticle Line is the National Median",
+    y = NULL,
+    x = "Income")+
+  theme_bw()+
+  theme(plot.title.position = 'plot',
+        title = element_text(size = 50,face = "bold"),
+        axis.title = element_text(size = 35),
+        axis.text = element_text(size = 25),
+        legend.text = element_text(size = 25),
+        legend.position = "top",
+        legend.direction = "horizontal"
+        ) -> p5
+
+ggiraph::girafe(ggobj = p5)
+
+```
+
