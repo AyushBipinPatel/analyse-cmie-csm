@@ -1322,3 +1322,133 @@ ggiraph::girafe(ggobj = p5)
 
 ```
 
+### Maharashtra
+
+A look into income quarantines across the various occupation groups of interest.
+
+```{r mh-inc-og}
+
+all_og <- data_household_incomes$OCCUPATION_GROUP|>
+  unique()
+
+cbind(get_inc_quantiles(level = "state",
+                        state = "Maharashtra"),
+get_inc_quantiles(level = "state",
+                        state = "Maharashtra", 
+                  with_ur_lens = "yes"))|>
+  select(-3)|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 9 : Maharashtra Income Quantiles") 
+
+```
+```{r def-fun-incq-og-mh}
+
+## function to get all income quantile of an Occupation Group for any state
+
+get_og_incq <- function(ocg, 
+                        state, 
+                        with_ur_lens = "no"){
+  
+  if(with_ur_lens == "no"){
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(TOTAL_INCOME) -> state_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(w_state) -> state_w
+    
+    Quantile(
+      state_inc,
+      weights = state_w
+    ) -> state_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      "{{state}}_{{ocg}}_inc" := state_inc_q
+    )
+    
+  }else{
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "RURAL")|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(TOTAL_INCOME) -> sat_rural_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "RURAL")|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(w_state) -> sat_rural_w
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "URBAN")|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(TOTAL_INCOME) -> sat_urban_inc
+    
+    data_household_incomes|>
+      filter(STATE == state)|>
+      filter(REGION_TYPE == "URBAN")|>
+      filter(OCCUPATION_GROUP == ocg)|>
+      pull(w_state) -> sat_urban_w
+    
+    Quantile(
+      sat_rural_inc,
+      weights = sat_rural_w
+    ) -> sat_rural_inc_q
+    
+    Quantile(
+      sat_urban_inc,
+      weights = sat_urban_w
+    ) -> sat_urban_inc_q
+    
+    tibble(
+      quantile = c("0%","25%","50%","75%","100%"),
+      "{{state}}_{{ocg}}_rural_inc" := sat_rural_inc_q,
+      "{{state}}_{{ocg}}_urban_inc" := sat_urban_inc_q
+    )
+  }
+  
+  
+}
+
+
+
+```
+
+```{r mh-ocg-incq}
+
+purrr::pmap_dfc(
+  .l = list(
+    ocg = all_og,
+    state = rep("Maharashtra",19),
+    with_ur_lens = rep("no",19)
+  ),
+  .f = get_og_incq
+)|>
+  janitor::clean_names()|>
+  rename(Quantiles = quantile_1)|>
+  select(!tidyselect::contains("quantile_"))|>
+  pivot_longer(cols = -Quantiles,names_to = "occupation_grp",values_to = "inc_q")|>
+  pivot_wider(names_from = Quantiles,
+              values_from = inc_q)|>
+  mutate(
+    occupation_grp = stringr::str_remove(
+      occupation_grp,"maharashtra_"
+    )
+  )|>
+  janitor::clean_names()|>
+  arrange(desc(x0_percent))|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 10 : Maharashtra -  Income Quantiles for Occupation groups")
+
+```
+
