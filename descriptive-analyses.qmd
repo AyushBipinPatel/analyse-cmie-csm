@@ -1452,3 +1452,68 @@ purrr::pmap_dfc(
 
 ```
 
+#### The $2.15/day comparision
+
+We can see how many HHs in Maharashtra, fall below the international poverty line of $2.15 a day.
+
+```{r mh-int-pvt}
+
+data_household_incomes|>
+  filter(STATE == "Maharashtra")|>
+  mutate(
+    less_215 = ifelse(TOTAL_INCOME < 5160,
+                      1,0)
+  )|>
+  summarise(
+    HH_below_215 = round(Mean(less_215,
+                             weights = w_state)*100,
+                             2)
+  )|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 11 : Maharashtra -  perc HH less than $2.15 per day")
+
+```
+
+__Urban - Rural Breakup__
+
+```{r mh-int-pvt-ur}
+data_household_incomes|>
+  filter(STATE == "Maharashtra")|>
+  mutate(
+    less_215 = ifelse(TOTAL_INCOME < 5160,
+                      1,0)
+  )|>
+  group_by(REGION_TYPE)|>
+  summarise(
+    HH_below_215_perc = round(Mean(less_215,
+                             weights = w_state)*100,
+                             2)
+  )|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 11 : Maharashtra(U/R) -  perc HH less than $2.15 per day")
+```
+__By Occupation group__
+
+```{r mh-int-pvt-og}
+data_household_incomes|>
+  filter(STATE == "Maharashtra")|>
+  mutate(
+    less_215 = ifelse(TOTAL_INCOME < 5160,
+                      1,0)
+  )|>
+  group_by(OCCUPATION_GROUP)|>
+  summarise(
+    HH_below_215_perc = round(Mean(less_215,
+                             weights = w_state)*100,
+                             2)
+  )|>
+  arrange(desc(HH_below_215_perc))|>
+  gt::gt()|>
+  gt::tab_options(heading.subtitle.font.size = 8)|>
+  gt::cols_align(align = "center")|>
+  gt::tab_header(title = "Table 11 : Maharashtra(O.G.) -  perc HH less than $2.15 per day")
+```
