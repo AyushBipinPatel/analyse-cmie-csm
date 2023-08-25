@@ -1452,68 +1452,83 @@ purrr::pmap_dfc(
 
 ```
 
-#### The $2.15/day comparision
+## Income from government transfers
 
-We can see how many HHs in Maharashtra, fall below the international poverty line of $2.15 a day.
+People who report to have received transfers (direct or in kind) from Government.
 
-```{r mh-int-pvt}
+```{r inc-transfers}
 
 data_household_incomes|>
-  filter(STATE == "Maharashtra")|>
   mutate(
-    less_215 = ifelse(TOTAL_INCOME < 5160,
-                      1,0)
+    received_gov_transfer = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_GOVERNMENT_TRANSFERS > 0|
+        INCOME_OF_HOUSEHOLD_FROM_IN_KIND_TRANSFERS_FROM_GOVERNMENT > 0,
+      1,0
+    ),
+    received_gov_transfer_direct = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_GOVERNMENT_TRANSFERS > 0,
+      1,0
+    ),
+    received_gov_transfer_inkind = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_IN_KIND_TRANSFERS_FROM_GOVERNMENT > 0,
+      1,0
+    )
   )|>
   summarise(
-    HH_below_215 = round(Mean(less_215,
-                             weights = w_state)*100,
-                             2)
+    perc_received_gov_transfer = Mean(
+      received_gov_transfer,
+      weights = w_cntry),
+    perc_received_gov_transfer_direct = Mean(
+      received_gov_transfer_direct,
+      weights = w_cntry),
+    perc_received_gov_transfer_inkind = Mean(
+      received_gov_transfer_inkind,
+      weights = w_cntry)
   )|>
-  gt::gt()|>
-  gt::tab_options(heading.subtitle.font.size = 8)|>
-  gt::cols_align(align = "center")|>
-  gt::tab_header(title = "Table 11 : Maharashtra -  perc HH less than $2.15 per day")
+  pivot_longer(cols = everything(),names_to = "GOV Transfer",values_to = "Percentage HH")|>
+  mutate(
+    `Percentage HH` = round(`Percentage HH`*100,2)
+  )|>
+  gt::gt()
 
 ```
 
-__Urban - Rural Breakup__
-
-```{r mh-int-pvt-ur}
+```{r inc-transfer-state}
 data_household_incomes|>
-  filter(STATE == "Maharashtra")|>
   mutate(
-    less_215 = ifelse(TOTAL_INCOME < 5160,
-                      1,0)
+    received_gov_transfer = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_GOVERNMENT_TRANSFERS > 0|
+        INCOME_OF_HOUSEHOLD_FROM_IN_KIND_TRANSFERS_FROM_GOVERNMENT > 0,
+      1,0
+    ),
+    received_gov_transfer_direct = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_GOVERNMENT_TRANSFERS > 0,
+      1,0
+    ),
+    received_gov_transfer_inkind = ifelse(
+      INCOME_OF_HOUSEHOLD_FROM_IN_KIND_TRANSFERS_FROM_GOVERNMENT > 0,
+      1,0
+    )
   )|>
-  group_by(REGION_TYPE)|>
+  group_by(STATE)|>
   summarise(
-    HH_below_215_perc = round(Mean(less_215,
-                             weights = w_state)*100,
-                             2)
+    perc_received_gov_transfer = Mean(
+      received_gov_transfer,
+      weights = w_state),
+    perc_received_gov_transfer_direct = Mean(
+      received_gov_transfer_direct,
+      weights = w_state),
+    perc_received_gov_transfer_inkind = Mean(
+      received_gov_transfer_inkind,
+      weights = w_state)
   )|>
-  gt::gt()|>
-  gt::tab_options(heading.subtitle.font.size = 8)|>
-  gt::cols_align(align = "center")|>
-  gt::tab_header(title = "Table 11 : Maharashtra(U/R) -  perc HH less than $2.15 per day")
+  mutate(
+    across(
+      .cols = -STATE,
+      .fns = ~round(.x*100, 2)
+    )
+  )|>
+  arrange(desc(perc_received_gov_transfer))|>
+  gt::gt()
 ```
-__By Occupation group__
 
-```{r mh-int-pvt-og}
-data_household_incomes|>
-  filter(STATE == "Maharashtra")|>
-  mutate(
-    less_215 = ifelse(TOTAL_INCOME < 5160,
-                      1,0)
-  )|>
-  group_by(OCCUPATION_GROUP)|>
-  summarise(
-    HH_below_215_perc = round(Mean(less_215,
-                             weights = w_state)*100,
-                             2)
-  )|>
-  arrange(desc(HH_below_215_perc))|>
-  gt::gt()|>
-  gt::tab_options(heading.subtitle.font.size = 8)|>
-  gt::cols_align(align = "center")|>
-  gt::tab_header(title = "Table 11 : Maharashtra(O.G.) -  perc HH less than $2.15 per day")
-```
