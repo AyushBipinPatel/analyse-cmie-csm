@@ -1,0 +1,451 @@
+---
+title: "Primary Descriptives of Urban Workers in Maharashtra"
+author: "Ayush Patel"
+subtitle: "Data: CMIE"
+date: Aug 11, 2023
+format: 
+  revealjs:
+    embed-resources: true
+    slide-number: c/t
+    width: 1400
+    theme: [serif, theme.scss]
+---
+
+```{r source-files}
+#|cache: true
+
+source("R/2023-09-06-support-script-for-presentation.R")
+
+```
+
+
+## Outline {.center auto-animate=true}
+
+This analysis aims to answer following questions:
+
+## Outline {.center auto-animate=true}
+
+This analysis aims to answer following questions:
+
+-   Who is the *[target group]{.blue}*?
+
+## Outline {.center auto-animate=true}
+
+This analysis aims to answer following questions:
+
+-   Who is the *[target group]{.blue}*?<br><br>
+
+-   Do we have any estimates about the *[volumes]{.blue}*?
+
+## Outline {.center auto-animate=true}
+
+This analysis aims to answer following questions:
+
+-   Who is the *[target group]{.blue}*?<br><br>
+
+-   Do we have any estimates about the *[volumes]{.blue}*?<br><br>
+
+-   *[Characteristics]{.blue}* of the target group and their households
+
+## Target Group
+
+:::{.incremental}
+
+- [Informally Engaged Urban Workers]{.blue} are the focus of this analysis.
+
+- **People of India data-set** records the *Occupation(180)* and *Nature of Occupation(22)*.
+
+- In this data, occupation is *de-linked* from employment status.
+
+- We can think of *Nature of Occupation* as a super classification of *Occupation*
+
+:::
+
+## Target Group - Nature of Occupation
+
+```{r display-nature-occu}
+#|tbl-cap: Various responses unders Nature of Occupation
+
+people_maharashtra_nature_occupation|>
+  rename("Population" = pop, 
+         "Nature of Occupation" = NATURE_OF_OCCUPATION)|>
+  cbind(
+    people_maharashtra_nature_occupation|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting()|>
+  rename("Proportion" = pop)
+  )|>
+  select(-3)|>
+  knitr::kable()|>
+  kableExtra::kable_styling()|>
+  kableExtra::row_spec(row = c(7,9,15,16,19),background = "#4f8a8b")|>
+  kableExtra::row_spec(row = c(8,11),background = "#dec000")|>
+  kableExtra::row_spec(row = c(5),background = "#43a9ff")|>
+  kableExtra::scroll_box(width = "100%", height = "600px")
+
+  
+  
+
+```
+
+## Target Group - Some blurred lines?{.scrollable}
+
+:::{.callout-tip title="Almost Certain (87,10712977)" collapse="true"}
+[Wage Labourers]{.tgsure} - ["This is the occupational status of a person who seeks employment for daily wages from non-agricultural sources. This includes industrial workers who work in factories or companies but are not employed on a regular basis in these. Wage labourers include construction site workers. Other examples of wage labourers include a taxi driver who operates the owners' taxi, a daily wage plumber or a brick-layer, or a painter, a carpenter, an electrician who does odd -jobs, or a load carrier in a market or an ad-hoc coolie at a bus-stand, or a car-washer, etc. Porters who carry luggage from one place to another, and earn income on piece-by-piece basis, should be classified as 'Wage Labourers'."]{.small} 
+
+
+[Industrial Workers]{.tgsure} - ["This is the occupational status of a person who is working as an Industrial worker in a factory. This includes all regular industrial workers but does not include daily wage labourers. It includes workers on the shop-floor and instructors, plant operators, assemblers and assembly line operators, mill workers, mine workers, industrial machine operators and industrial equipment operators. People working on ports or docks are also classified as industrial workers."]{.small}
+
+[Non-Industrial Technical Employee]{.tgsure} - ["This is the occupational status of persons who work as equipment operators,dieticians, assistants to qualified professionals, foreman, draughtsman,laboratory assistant, photographer, sound recordist, film editor,camera-man, wireless operator, X-ray technician, physiotherapist(diploma holders), speech therapist, midwife, nurses, radio and television announcers etc. A priest or a pujari who works full time in a church/temple, is classified here. The occupation of a bus conductor is 'Non-industrial Technical'' employee. Cooks, chefs, waiters, persons working in retail shop as salespersons, are 'Non-Industrial Technical'' employees."]{.small}
+
+[Small Trader/Hawker/Businessman without Fixed Premises]{.tgsure} - ["This is the occupational status of a person who is occupied in a very small trading or business activity as an independent entrepreneur. The activities of these entrepreneurs are usually the kinds that are classified as the 'informal'' economy. So, the characteristic of the business activity These are not registered businesses like factories or shops. These are businesses run out of push-carts, roadside stalls, baskets, carry-on bags and similar contraptions. It includes occupations such as fruit and vegetable vendor who sells his goods essentially on the streets or by carrying them around on his head or cart, etc." ]{.small}
+
+[Home-based Worker]{.tgsure} - ["This is the occupational status of a person who undertakes regular household work at home, such as cooking, bringing up children, and general housekeeping. A home-maker can be the housewife but can also be any other person. For example, a member of the family other than the wife of the head of the household could be a home-maker; or a relative of the head of household could be a part of the household and performing the tasks of a home maker. A housewife is a home-maker."]{.small}
+:::
+
+<hr>
+:::{.callout-note title="Could have more than a few (60,6713889)" collapse="true"}
+[Support Staff]{.tgmaybe} - 
+["This is the occupational status of a person who is salaried and is part of the support function in a factory or government or an office of a service company. It includes peons, janitors (lift-man), door keepers, watch-persons (security-guards), drivers and conductors, gardeners, garbage collectors, sweepers, cooks, waiters, housekeepers, delivery boys, and similar persons who provide support services. Drivers who are classified in the 'Travel and Tourism'' industry are assigned the occupation of 'Non-Industrial-Technical'' employees. However, if a driver is working for a company, then that person is classified as 'Support-Staff'." ]{.small}
+
+[White Collar Clerical Employees]{.tgmaybe} - ["This is the occupational status of a person whose work is largely desk-based and operational or driven by system. Typically, these are stenographers, typists, telephone operators, secretaries, office clerks,UDC/LDC (upper division clerks and lower division clerks), BPO/KPO(business process outsourcing and knowledge processing outsourcing) workers, data-entry operators, cashiers, tellers, etc. The occupation of persons who sell tickets on the Railway counters is 'White-Collar-Clerical' employees."]{.small}
+:::
+<hr>
+:::{.callout-note title="Could have a few (67,7433121)" collapse="true"}
+[Self Employed Entrepreneur]{.tgcouldbe} - ["This is the occupational status of a person who run their own dispensaries or firms. Doctors, lawyers,consultants, chartered accountants are classified as Qualified Self-employed Professionals. Self employed professionals are people whose occupation is determined by a formal educational degree such as a doctor or a lawyer or by a specific skill such as a sportsman. Qualified self-employed professionals work or operate on their own premises in their own enterprise. They do not work for another enterprise. Qualified self-employed professionals would include physicians (doctors), surgeons, dentists, veterinarians, etc. This field has now been discontinued and is captured under'Qualified Self Employed Professional." ]{.small}
+:::
+
+## Target Group - Some blurred lines?{.scrollable}
+
+There are 62 Occupations that overlap across three possible definitions of target group. 
+
+How are people who have the same *OCCUPATION* but have different *NATURE OF OCCUPATION* different? (Interesting exercise to explore)
+
+
+```{r show-overlap}
+
+mh_blurred_lines_tg|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 15)|>
+  kableExtra::scroll_box(width = "100%", height = "450px")
+
+```
+
+## Defining Target Group - A reasonable recipie{.scrollable}
+
+**Who are included?**
+
+$$ 
+Reasonable\hspace{1mm}Target\hspace{1mm}Group(18722168,13.8\%) = \begin{cases} Everyone\hspace{1mm}in\hspace{1mm}TG1(10712977,7.9\%),\\
+Anyone\hspace{1mm}with\hspace{1mm}a\hspace{1mm}Common\hspace{1mm}Occupation\hspace{1mm}in\hspace{1mm}TG2(5040963,3.7\%),\\
+Anyone\hspace{1mm}with\hspace{1mm}a\hspace{1mm}Common\hspace{1mm}Occupation\hspace{1mm}in\hspace{1mm}TG3(2968228,2.1\%) \end{cases}
+$$
+
+**Who is left out?**
+
+:::{.callout-tip title="TG1" collapse="true"}
+No one with occupation as TG1 is left out.
+:::
+
+:::{.callout-note title="TG2" collapse="true"}
+[Accounting, payroll, stocks, audit and book keeping clerks||Liftmen, watchmen, security guards||Bank tellers, cashiers||Front office associates, Customer service desk persons||Accountants and auditors||Kitchen helpers, fast food preparers||Call centre salespersons/operators/workers||Sweepers, Garbage Collectors||Purchase officers||Reservation/Booking Clerks||Room attendants, bell boys/Kitchen Porters, Hotel boys||School teachers||Child care maids, Ayahs, Governesses||Telephone operators||Basic computer course/DTP trainers||Private secretaries||Survey/Market research interviewers||Armed forces, Junior commissioned officers, subedars, naik subedars]{.small}
+:::
+
+:::{.callout-note title="TG3" collapse="true"}
+[Smaller businessmen (smaller shops or offices), Shopkeepers, small dhaba owners||Butchers/Slaughterers (Kasai), Cutting and Selling meat||Real estate agents, brokers, property Managers||Insurance agents||Financial advisors, (Advise in investments in mutual funds, shares, deposits)||Sales and marketing professionals||Travel Consultants, Organizers, Travel Planners||Wood treatment, furniture, cabinet makers||Pathology lab technicians||Land surveyors||Potters, pot makers, idol (murti) makers||Interior designers||Computer Systems/Hardware analysts||Software developers, Software Engineers||Beggars, Prostitutes, Police informers||Animal drawn vehicle drivers||Music composers||Associates of traditional medicine practitioners, Assistants to Ayurvedic, Homeopathic and Unani doctors||Bulldozer/Scrapper/Dumper/Conveyor/Crane Operators||Astrologers, Palmists (Jyotshi), tarot card readers]{.small}
+:::
+
+## Volume of the Target Group
+
+**Informally Engaged Workers** in Maharashtra 1,87,22,168. This is nearly 13.8% of the population of Maharashtra.
+
+```{r vol-iew-mh}
+
+cbind(mh_iew|>
+        ungroup(),
+       mh_iew|>
+        janitor::adorn_percentages(denominator = "col")|>
+        janitor::adorn_pct_formatting()|>
+        ungroup()|>
+        select(`Total IEW`)|>
+        rename("Proportion IEW" = `Total IEW`))|>
+  knitr::kable()%>%
+  kableExtra::kable_styling()
+
+```
+
+>**Informally Engaged Urban Workers** of Maharashtra = 1,22,88,866 
+
+## Employment Status of Urban IEW - Maharashtra
+
+```{r emp-stat-iew}
+
+cbind(
+  mh_iew_emp_status,
+  mh_iew_emp_status|>
+        janitor::adorn_percentages(denominator = "col")|>
+        janitor::adorn_pct_formatting()|>
+        select(`Total IEW`)|>
+        rename("Proportion IEW" = `Total IEW`)
+    )|>
+  knitr::kable()|>
+    kableExtra::kable_styling(font_size = 35)
+```
+
+
+
+
+## Employment Arrangement of Urban IEW - Maharashtra
+
+```{r emp-arrang-iew}
+
+cbind(
+  mh_iew_emp_arrangement,
+  mh_iew_emp_arrangement|>
+        janitor::adorn_percentages(denominator = "col")|>
+        janitor::adorn_pct_formatting()|>
+        select(`Total IEW`)|>
+        rename("Proportion IEW" = `Total IEW`)
+    )|>
+  knitr::kable()|>
+    kableExtra::kable_styling(font_size = 25)
+```
+
+> How is it that people in "Reasonable Target Group" are salaried?
+> Need to see the kind of occupatiions these people have.
+
+## Occupation of select Employment arrangement category{.small}
+
+**Salaried - Permanent** in urban Maharashtra
+
+```{r}
+cbind(
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(is_rtg == 1)|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(EMPLOYMENT_ARRANGEMENT == "Salaried - Permanent")|>
+  group_by(OCCUPATION)|>
+  summarise(
+    num_people = sum(w_state)
+  )|>
+  ungroup()|>
+  arrange(desc(num_people)),
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(is_rtg == 1)|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(EMPLOYMENT_ARRANGEMENT == "Salaried - Permanent")|>
+  group_by(OCCUPATION)|>
+  summarise(
+    num_people = sum(w_state)
+  )|>
+  ungroup()|>
+  arrange(desc(num_people))|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting()|>
+  select(num_people)|>
+  rename("proportion of people"  = num_people)
+)|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)|>
+  kableExtra::scroll_box(width = "100%", height = "550px")
+
+```
+
+> The question of comparing people with different employment arrangement and same occupation arises again. Shuld they be in the target group?
+
+## Occupation of select Employment arrangement category{.small}
+
+**Self-employed not on digital platform** in urban Maharashtra
+
+```{r}
+cbind(
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(is_rtg == 1)|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(EMPLOYMENT_ARRANGEMENT == "Self-employed not on digital platform")|>
+  group_by(OCCUPATION)|>
+  summarise(
+    num_people = sum(w_state)
+  )|>
+  ungroup()|>
+  arrange(desc(num_people)),
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(is_rtg == 1)|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(EMPLOYMENT_ARRANGEMENT == "Self-employed not on digital platform")|>
+  group_by(OCCUPATION)|>
+  summarise(
+    num_people = sum(w_state)
+  )|>
+  ungroup()|>
+  arrange(desc(num_people))|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting()|>
+  select(num_people)|>
+  rename("proportion of people"  = num_people)
+)|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)|>
+  kableExtra::scroll_box(width = "100%", height = "550px")
+
+```
+
+## Reasonable Target Group{.center}
+
+**This needs fine tuning**
+
+- Exclude *"Industrial Workers"* from TG1? *~60% are salaried-permanent, ~38% salaried-temporary* | *~70% fall under the Industrial and Machine worker Occupation category*
+- What about Occupations categories, such as Domestic Maid, driver, waiter etc that are usually informally engaged but there are instances for them engaged with salary ?
+- How to think about Employment arrangement? 
+
+
+
+## Comparison of RTG with other occupations{.center}
+
+We select people who are either employed or seeking employment and are above 15 years of age to compare with the RTG.
+
+All comparisons are in urban setting.
+
+## Access to Bank Accounts
+
+Access to banks for people (urban) within RTG and people not in RTG, for age above 15.
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(AGE_YRS>15)|>
+  filter(
+    is_rtg == 1 |
+    EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  group_by(is_rtg)|>
+  summarise(
+    `Total People` = sum(w_state),
+    `Proportion Bank Access` =  round(DescTools::Mean(
+      ifelse(HAS_BANK_AC == "Y",
+             1,
+             0),
+      weights = w_state),3)
+  )|>
+  knitr::kable()|>
+    kableExtra::kable_styling()
+
+```
+
+## Access to PF Account
+
+Access to PF account for people (urban) within RTG and people not in RTG, for age above 15.
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(AGE_YRS>15)|>
+  filter(
+    is_rtg == 1 |
+    EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  group_by(is_rtg)|>
+  summarise(
+    `Total People` = sum(w_state),
+    `Proportion PF Acc` =  round(DescTools::Mean(
+        ifelse(HAS_PF_AC == "Y",
+             1,
+             0),
+      weights = w_state),2)
+  )|>
+  knitr::kable()|>
+    kableExtra::kable_styling()
+
+```
+
+## Access to Life Insurance
+
+Access to Life insurance for people (urban) within RTG and people not in RTG, for age above 15.
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(AGE_YRS>15)|>
+  filter(
+    is_rtg == 1 |
+    EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  group_by(is_rtg)|>
+  summarise(
+    `Total People` = sum(w_state),
+    `Proportion Life Insurance` =  round(DescTools::Mean(
+        ifelse(HAS_LIC == "Y",
+             1,
+             0),
+      weights = w_state),2)
+  )|>
+  knitr::kable()|>
+    kableExtra::kable_styling()
+
+```
+
+## Access to Health Insurance
+
+Access to health insurance for people (urban) within RTG and people not in RTG, for age above 15.
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(AGE_YRS>15)|>
+  filter(
+    is_rtg == 1 |
+    EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  group_by(is_rtg)|>
+  summarise(
+    `Total People` = sum(w_state),
+    `Proportion Bank Access` =  round(DescTools::Mean(
+        ifelse(HAS_HEALTH_INSURANCE == "Y",
+             1,
+             0),
+      weights = w_state),2)
+  )|>
+  knitr::kable()|>
+    kableExtra::kable_styling()
+
+```
+
+## Access to Mobile
+
+Access to Mobile for people (urban) within RTG and people not in RTG, for age above 15.
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(AGE_YRS>15)|>
+  filter(
+    is_rtg == 1 |
+    EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  group_by(is_rtg)|>
+  summarise(
+    `Total People` = sum(w_state),
+    `Proportion Mobile` =  round(DescTools::Mean(
+        ifelse(HAS_MOBILE == "Y",
+             1,
+             0),
+      weights = w_state),2)
+  )|>
+  knitr::kable()|>
+  kableExtra::kable_styling()
+
+```
