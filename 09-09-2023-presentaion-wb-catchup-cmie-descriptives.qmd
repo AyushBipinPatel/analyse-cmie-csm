@@ -607,3 +607,480 @@ people|>
   kableExtra::kable_styling()
 
 ```
+
+## Comparing Characterstics at Household Level{.center}
+
+The **Aspirational India Data-set** allows us to compare RTG households with other across income groups, access to public service (water and power), Asset Ownership (houses, AC, refrigerators, washing machines, etc), savings (FD, life insurance), and indebtedness(borrowings).
+
+All comparisons are made in urban setting of Maharashtra.
+
+## Income Groups - RTG HHs vs Non-RTG HH
+
+```{r}
+full_join(
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 1)|>
+  group_by(INCOME_GROUP)|>
+  summarise(
+    `% of RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 0)|>
+  group_by(INCOME_GROUP)|>
+  summarise(
+    `% of non-RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+by = join_by(INCOME_GROUP)
+)|>
+  arrange(INCOME_GROUP)|>
+  knitr::kable()%>%
+  kableExtra::kable_styling(font_size = 35)%>%
+  kableExtra::scroll_box(width = "100%", height = "600px")
+  
+```
+
+## Public Service Delivery - RTG HHs vs Non-RTG HH
+
+::::{.columns}
+
+:::{.column}
+
+```{r}
+full_join(
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 1)|>
+  group_by(WATER_GROUP)|>
+  summarise(
+    `% of RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 0)|>
+  group_by(WATER_GROUP)|>
+  summarise(
+    `% of non-RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+by = join_by(WATER_GROUP)
+)|>
+  arrange(WATER_GROUP)|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 35)
+  
+```
+
+
+
+
+:::
+
+:::{.column}
+```{r}
+full_join(
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 1)|>
+  group_by(POWER_GROUP)|>
+  summarise(
+    `% of RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+aspiration_mh|>
+  filter(REGION_TYPE == "URBAN")|>
+  filter(is_rtg_hh == 0)|>
+  group_by(POWER_GROUP)|>
+  summarise(
+    `% of non-RTH HHs` = sum(w_state)
+  )|>
+  janitor::adorn_percentages(denominator = "col")|>
+  janitor::adorn_pct_formatting(),
+by = join_by(POWER_GROUP)
+)|>
+  arrange(POWER_GROUP)|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 35)
+  
+```
+
+
+
+:::
+
+::::
+
+## Assets Owned - RTG HHs vs Non-RTG HH
+
+::::{.columns}
+
+:::{.column width="33%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Houses` = DescTools::Mean(
+      ifelse(HOUSES_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Fridge` = DescTools::Mean(
+      ifelse(REFRIGERATORS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Computer` = DescTools::Mean(
+      ifelse(COMPUTERS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+:::
+
+:::{.column width="33%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Car` = DescTools::Mean(
+      ifelse(CARS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own AC` = DescTools::Mean(
+      ifelse(AIR_CONDITIONERS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own TV` = DescTools::Mean(
+      ifelse(TELEVISIONS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+:::
+
+:::{.column width="33%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own 2Wheeler` = DescTools::Mean(
+      ifelse(TWO_WHEELERS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Washing M/C` = DescTools::Mean(
+      ifelse(WASHING_MACHINES_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH own Cooler` = DescTools::Mean(
+      ifelse(COOLERS_OWNED > 0,
+             1,0)
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 25)
+```
+
+:::
+
+::::
+
+## Savings - RTG HHs vs Non-RTG HH
+
+::::{.columns}
+
+:::{.column width="33%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with FD` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_FIXED_DEPOSITS == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with PO Saving` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_POST_OFFICE_SAVINGS == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+
+:::
+
+:::{.column width="33%"}
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with PF saving` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_PROVIDENT_FUND == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with Life Insurance savings` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_LIFE_INSURANCE == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+:::
+
+:::{.column width="33%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with Mutual Funds` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_MUTUAL_FUNDS == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with Gold` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_SAVING_IN_GOLD == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 30)
+  
+```
+
+:::
+
+
+::::
+
+## Borrowings - RTG HHs vs Non-RTG HH
+
+
+::::{.columns}
+
+:::{.column width="50%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH with Borrowings` = DescTools::Mean(
+      ifelse(HAS_OUTSTANDING_BORROWING == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 40)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH borrow from bank` = DescTools::Mean(
+      ifelse(BORROWED_FROM_BANK == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 40)
+  
+```
+
+:::
+
+:::{.column width="50%"}
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH borrow from money lender` = DescTools::Mean(
+      ifelse(BORROWED_FROM_REL_FRIENDS == "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 40)
+  
+```
+
+```{r}
+aspiration_mh|>
+  filter(STATE == "Maharashtra")|>
+  filter(REGION_TYPE == "URBAN")|>
+  group_by(is_rtg_hh)|>
+  summarise(
+    `% HH borrow from shops` = DescTools::Mean(
+      ifelse(BORROWED_FROM_SHOPS== "Y",
+             1,0),
+      weights = w_state
+    )
+  )|>
+  janitor::adorn_pct_formatting()|>
+  knitr::kable()|>
+  kableExtra::kable_styling(font_size = 40)
+```
+
+
+:::
+
+::::
