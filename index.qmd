@@ -10,3 +10,4 @@ This landing page will contain all analyses exercises related to the CMIE data f
 
   + Replication Exercise of the WB paper by Shrayana and Sutirtha. [Click Here](replicate-to-ensure.html) to see the reproduced results.
   + [CMIE descriptive analysis](descriptive-analyses.html)
+  + [Presentation on CMIE Descriptive Analysis](09-09-2023-presentaion-wb-catchup-cmie-descriptives.html)
