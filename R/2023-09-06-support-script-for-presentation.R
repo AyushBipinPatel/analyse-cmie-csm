@@ -375,6 +375,7 @@ people|>
 
 
 
+
 ## Volume estimates ----
 
 ## first create a dummy for reasonable target group in people dataset
@@ -459,4 +460,68 @@ people|>
   )|>
   pull(uid)|>
   unique() -> mh_rtg_memid
+
+
+
+## mark MH HHs in aspirations as rtg hh or not ----
+
+aspiration|>
+  filter(STATE == "Maharashtra")|>
+  mutate(
+    is_rtg_hh = ifelse(HH_ID %in% mh_rtg_hhid,
+                       1,
+                       0),
+    w_state = HH_WEIGHT_FOR_STATE_W *HH_NON_RESPONSE_FOR_STATE_W,
+    INCOME_GROUP = forcats::fct(INCOME_GROUP,
+                                levels = c(
+                                  "<=36000",
+                                  "36000 - 48000",
+                                  "48000 - 60000",
+                                  "60000 - 72000",
+                                  "72000 - 84000",
+                                  "84000 - 100000",
+                                  "100000 - 120000",
+                                  "120000 - 150000",
+                                  "150000 - 200000",
+                                  "200000 - 250000",
+                                  "250000 - 300000",
+                                  "300000 - 400000",
+                                  "400000 - 500000",
+                                  "500000 - 600000",
+                                  "600000 - 700000",
+                                  "700000 - 800000",
+                                  "800000 - 900000",
+                                  "900000 - 1000000",
+                                  "1000000 - 1200000",
+                                  "1200000 - 1500000",
+                                  "1500000 - 1800000",
+                                  "1800000 - 2000000",
+                                  "2000000 - 2400000",
+                                  "2400000 - 3600000",
+                                  ">3600000"
+                                )),
+    WATER_GROUP = forcats::fct(
+      WATER_GROUP,
+      levels = c(
+        "< 6 hours",
+        "6-12 hours",
+        "12-24 hours",
+        "24 hours",
+        "Not Applicable"
+      )
+    ),
+    POWER_GROUP = forcats::fct(
+      POWER_GROUP,
+      levels = c(
+        "< 6 hours",
+        "6-12 hours",
+        "12-24 hours",
+        "24 hours",
+        "Not Applicable"
+      )
+    )
+  ) -> aspiration_mh
+
+
+
 
