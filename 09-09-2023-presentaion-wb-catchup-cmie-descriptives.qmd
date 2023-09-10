@@ -2,7 +2,7 @@
 title: "Primary Descriptives of Urban Workers in Maharashtra"
 author: "Ayush Patel"
 subtitle: "Data: CMIE"
-date: Aug 11, 2023
+date: "Sept 11, 2023"
 format: 
   revealjs:
     embed-resources: true
