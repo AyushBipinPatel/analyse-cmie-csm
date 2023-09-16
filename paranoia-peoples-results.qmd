@@ -1,0 +1,398 @@
+---
+title: "Unintuitive Results"
+author: "Ayush Patel"
+format: html
+---
+
+This is a small reporducible document to generate some results which I find unintuituve from the `People of India` dataset of CMIE. I am using the `people_of_india_20230101_20230431.csv` file, with state and country level weights are required.
+
+## Libraries
+
+```{r}
+library(here)
+library(dplyr)
+library(tidyr)
+
+```
+
+## load data, keep accepted responses and create weights
+
+```{r}
+people <- readr::read_csv(
+  here("data","data-for-descriptive-analysis",
+       "people_of_india_20230101_20230430_R.csv")
+)
+
+## Keep only accepted responses from the 'people' data
+
+people|>
+  filter(RESPONSE_STATUS == "Accepted")|>
+  mutate(
+    uid = paste(HH_ID,MEM_ID,sep = "")
+  )-> people
+
+## create weights
+
+people|>
+  mutate(
+    w_state = MEM_WEIGHT_FOR_STATE_W *
+      MEM_NON_RESPONSE_FOR_STATE_W,
+    w_country = MEM_WEIGHT_FOR_COUNTRY_W *
+      MEM_NON_RESPONSE_FOR_COUNTRY_W
+  ) -> people
+```
+
+## define target group
+
+```{r}
+# Since there is no way to know if a person has a 
+# written contract or gets paid leave, the only
+# reasonable variable we are left with is people
+# having a PF account. We can try using nature of
+# occupation along with PF.
+
+### let us see, from those who are employed and looking
+### for a job have a pf account in india and maharashtra.
+### This will give us uid foe target group.
+
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|> 
+  filter(NATURE_OF_OCCUPATION %in% c(
+    "Wage Labourer",
+    "Industrial Workers",
+    "Non-Industrial Technical Employee",
+    "Small Trader/Hawker/ Businessman without Fixed Premises",
+    "Home-based Worker",
+    "Self Employed Entrepreneur",
+    "Support Staff",
+    "White Collar Clerical Employees"
+  ))|>
+  filter(OCCUPATION != "Smaller businessmen (smaller shops or offices), Shopkeepers, small dhaba owners")|>
+  filter(HAS_PF_AC == "N")|>
+  filter(EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  pull(uid) -> uid_target_group_without_homemaker_student
+
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|> 
+  filter(NATURE_OF_OCCUPATION %in% c(
+    "Wage Labourer",
+    "Industrial Workers",
+    "Non-Industrial Technical Employee",
+    "Small Trader/Hawker/ Businessman without Fixed Premises",
+    "Home-based Worker",
+    "Self Employed Entrepreneur",
+    "Support Staff",
+    "White Collar Clerical Employees",
+    "Student",
+    "Home Maker"
+  ))|>
+  filter(OCCUPATION != "Smaller businessmen (smaller shops or offices), Shopkeepers, small dhaba owners")|>
+  filter(HAS_PF_AC == "N")|>
+  filter(EMPLOYMENT_STATUS %in% c("Employed",
+                                  "Unemployed, willing and looking for a job",
+                                  "Unemployed, willing but not looking for a job"))|>
+  pull(uid) -> uid_target_group_with_homemaker_student
+
+people|>
+  filter(uid %in% uid_target_group_without_homemaker_student)|>
+  pull(HH_ID)|>
+  unique() -> hhid_target_group_without_homemaker_student
+
+people|>
+  filter(uid %in% uid_target_group_with_homemaker_student)|>
+  pull(HH_ID)|>
+  unique() -> hhid_target_group_with_homemaker_student
+
+
+people|>
+  mutate(
+    is_tg = ifelse(
+      uid %in% uid_target_group_without_homemaker_student,
+      1,0
+    ),
+    is_tg_plus_stu_hm = ifelse(
+      uid %in% uid_target_group_with_homemaker_student,
+      1,
+      0
+    )
+  )-> people
+
+```
+
+## Reasonable estimates
+
+**Population of India**
+
+```{r}
+people|>
+  pull(w_country)|>
+  sum()
+```
+
+**Population of Maharashtra**
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  pull(w_state)|>
+  sum()
+```
+
+**Percentage of people (above15) in India with Bank Accounts**
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  summarise(
+    perc_has_bank_ac = DescTools::Mean(
+      ifelse(HAS_BANK_AC == "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(REGION_TYPE)|>
+  summarise(
+    perc_has_bank_ac = DescTools::Mean(
+      ifelse(HAS_BANK_AC == "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+**Percentage of people (above15) in Maharashtra with Bank Accounts**
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  summarise(
+    perc_has_bank_ac = DescTools::Mean(
+      ifelse(HAS_BANK_AC == "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(REGION_TYPE)|>
+  summarise(
+    perc_has_bank_ac = DescTools::Mean(
+      ifelse(HAS_BANK_AC == "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+## The unintuitive result
+
+Mostly it to do with if a member has a mobile.
+
+**Percentage of people(above15) in India with a mobile**
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE == "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(REGION_TYPE)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE== "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+> The above two results are not too alarming, see what happens when we see below for people in target group vs people not in target group.
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE == "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg,REGION_TYPE)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE== "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+```
+> This is the real brain teaser to me, **%people in target group that have mobile is higher than %people not in target with mobile. This result follows for India and most states **
+
+**Percentage of people(above15) in Maharashtra with a mobile**
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE == "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(REGION_TYPE)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE== "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE == "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg,REGION_TYPE)|>
+  summarise(
+    perc_has_mobile = DescTools::Mean(
+      ifelse(HAS_MOBILE== "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+```
+
+## Results where target group numbers seem high
+
+**Percentage of people in India(above15) in tg vs not in tg that have life insurance**
+
+```{r}
+people|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg)|>
+  summarise(
+    perc_has_lic = DescTools::Mean(
+      ifelse(HAS_LIC== "Y",
+             1,0),
+      weights = w_country
+    )
+  )
+  
+```
+
+**Percentage of people in Maharashtra(above15) in tg vs not in tg that have life insurance**
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg)|>
+  summarise(
+    perc_has_lic = DescTools::Mean(
+      ifelse(HAS_LIC== "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+  
+```
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg, REGION_TYPE)|>
+  summarise(
+    perc_has_lic = DescTools::Mean(
+      ifelse(HAS_LIC== "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+  
+```
+
+**Same issue with health insurance**
+
+```{r}
+people|>
+  filter(STATE == "Maharashtra")|>
+  filter(AGE_YRS>15 | 
+           (AGE_YRS ==15 & AGE_MTHS >0))|>
+  group_by(is_tg, REGION_TYPE)|>
+  summarise(
+    perc_has_health_ins = DescTools::Mean(
+      ifelse(HAS_HEALTH_INSURANCE== "Y",
+             1,0),
+      weights = w_state
+    )
+  )
+  
+```
