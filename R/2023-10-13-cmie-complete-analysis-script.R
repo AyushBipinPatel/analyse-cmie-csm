@@ -205,3 +205,92 @@ aspiration|>
     )
   ) -> aspiration
 
+
+# Keep variables of interest only -----------------------------------------
+
+## People ----
+
+people|>
+  select(
+    STATE,
+    HH_ID,
+    MEM_ID,
+    is_tg,
+    w_state,
+    w_country,
+    REGION_TYPE,
+    GENDER,
+    RELIGION,
+    CASTE_CATEGORY,
+    EDUCATION,
+    EMPLOYMENT_STATUS,
+    EMPLOYMENT_ARRANGEMENT,
+    HAS_BANK_AC,
+    HAS_CREDITCARD,
+    HAS_PF_AC,
+    HAS_LIC,
+    HAS_HEALTH_INSURANCE,
+    HAS_MOBILE
+  ) -> people
+
+## Aspiration ----
+
+aspiration|>
+  select(
+    STATE,
+    HH_ID,
+    REGION_TYPE,
+    is_tg,
+    w_state,
+    w_country,
+    INCOME_GROUP,
+    HOUSES_OWNED,
+    REFRIGERATORS_OWNED,
+    AIR_CONDITIONERS_OWNED,
+    COOLERS_OWNED,
+    WASHING_MACHINES_OWNED,
+    TELEVISIONS_OWNED,
+    COMPUTERS_OWNED,
+    CARS_OWNED,
+    TWO_WHEELERS_OWNED,
+    HAS_OUTSTANDING_SAVING_IN_FIXED_DEPOSITS,
+    HAS_OUTSTANDING_SAVING_IN_POST_OFFICE_SAVINGS,
+    HAS_OUTSTANDING_SAVING_IN_NSC_BONDS,
+    HAS_OUTSTANDING_SAVING_IN_PROVIDENT_FUND,
+    HAS_OUTSTANDING_SAVING_IN_LIFE_INSURANCE,
+    HAS_OUTSTANDING_SAVING_IN_MUTUAL_FUNDS,
+    HAS_OUTSTANDING_SAVING_IN_LISTED_SHARES,
+    HAS_OUTSTANDING_SAVING_IN_BUSINESS,
+    HAS_OUTSTANDING_SAVING_IN_GOLD,
+    HAS_OUTSTANDING_BORROWING,
+    BORROWED_FOR_HOUSING,
+    BORROWED_FOR_EDUCATION,
+    BORROWED_FOR_MEDICAL_EXPENDITURE,
+    BORROWED_FOR_CONSUMPTION_EXPENDITURE,
+    BORROWED_FOR_CONSUMER_DURABLES,
+    BORROWED_FOR_WEDDING,
+    HAS_ACCESS_TO_ELECTRICITY,
+    POWER_AVAILABILITY_IN_HOURS_PER_DAY,
+    HAS_ACCESS_TO_WATER_IN_HOUSE,
+    WATER_AVAILABILITY_IN_DAYS_PER_WEEK,
+    WATER_AVAILABILITY_IN_HOURS_PER_DAY,
+    HAS_TOILET_IN_HOUSE
+    
+  ) -> aspiration
+
+
+# nest people and aspiration  ---------------------------------------------
+
+## The goal is to create statistics for every state
+## We nest the people and aspiration data by state
+
+## nest people ----
+
+people|>
+  nest(.by = STATE) -> nested_people
+
+## nest aspiration ----
+
+aspiration|>
+  nest(.by = STATE) -> nested_aspiration
+
