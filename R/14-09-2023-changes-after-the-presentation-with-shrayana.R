@@ -82,9 +82,7 @@ people|>
   ))|>
   filter(OCCUPATION != "Smaller businessmen (smaller shops or offices), Shopkeepers, small dhaba owners")|>
   filter(HAS_PF_AC == "N")|>
-  filter(EMPLOYMENT_STATUS %in% c("Employed",
-                                  "Unemployed, willing and looking for a job",
-                                  "Unemployed, willing but not looking for a job"))|>
+  filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
   pull(uid) -> uid_target_group_without_homemaker_student
 
 people|>
@@ -104,9 +102,7 @@ people|>
   ))|>
   filter(OCCUPATION != "Smaller businessmen (smaller shops or offices), Shopkeepers, small dhaba owners")|>
   filter(HAS_PF_AC == "N")|>
-  filter(EMPLOYMENT_STATUS %in% c("Employed",
-                                  "Unemployed, willing and looking for a job",
-                                  "Unemployed, willing but not looking for a job"))|>
+  filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
   pull(uid) -> uid_target_group_with_homemaker_student
 
 people|>
