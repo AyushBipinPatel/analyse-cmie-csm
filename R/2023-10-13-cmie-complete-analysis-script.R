@@ -9,6 +9,7 @@
 library(here)
 library(tidyverse)
 library(janitor)
+library(DescTools)
 
 # load data and generate weights ------------------------------------------
 
@@ -215,6 +216,8 @@ people|>
     STATE,
     HH_ID,
     MEM_ID,
+    AGE_YRS,
+    AGE_MTHS,
     is_tg,
     w_state,
     w_country,
@@ -294,3 +297,597 @@ people|>
 aspiration|>
   nest(.by = STATE) -> nested_aspiration
 
+
+
+# calculate state level statistics for people data ------------------------
+
+## Number,share of people in TG ----
+
+nested_people|>
+  
+  ### create columns in nested data for state level stats
+  
+  mutate(
+    
+    ### Number of people in TG in the entire state
+    
+    num_in_tg_state = map_dbl(
+      data,
+      ~ filter(.x, is_tg == 1)|>
+        pull(w_state)|>
+        sum()
+    ),
+    
+    ### Proportion of people in TG in the entire state
+    
+    prop_in_tg_state = map(
+      data,
+      ~ group_by(.x,is_tg)|>
+        summarise(
+          prop_in_tg_state = sum(w_state)
+        )|>
+        adorn_percentages(denominator = "col")
+    ),
+    
+    ### Proportion of people in TG in entire state w.r.t. all above 15 and employed
+    
+    prop_in_tg_wrt_above15_and_employed_state = map(
+      data,
+      ~ filter(.x,AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_in_tg_wrt_above15_and_employed_state = sum(w_state)
+        )|>
+        adorn_percentages(denominator = "col")
+    ),
+    
+    ### Proportion of TG in Region type
+    
+    prop_of_tg_in_region_type = map(
+      data,
+      ~ filter(.x, is_tg == 1)|>
+        group_by(REGION_TYPE)|>
+        summarise(
+          prop_of_tg_in_region_type = sum(w_state)
+        )|>
+      adorn_percentages(denominator = "col")
+    ),
+    
+    ### Proportion of TG in Gender type
+    
+    prop_of_tg_in_gender = map(
+      data,
+      ~ filter(.x, is_tg == 1)|>
+        group_by(GENDER)|>
+        summarise(
+          prop_of_tg_in_gender = sum(w_state)
+        )|>
+        adorn_percentages(denominator = "col")
+    ),
+    
+    ### Proportion of TG in Gender type in Urban area
+    
+    prop_of_tg_in_gender_in_urban = map(
+      data,
+      ~ filter(.x, is_tg == 1 &
+               REGION_TYPE == "URBAN")|>
+        group_by(GENDER)|>
+        summarise(
+          prop_of_tg_in_gender_in_urban = sum(w_state)
+        )|>
+        adorn_percentages(denominator = "col")
+    ),
+    
+    ### Proportion of TG in caste category in Urban area
+    
+    prop_of_tg_in_castecategory_in_urban = map(
+      data,
+      ~ filter(.x, is_tg == 1 &
+                 REGION_TYPE == "URBAN")|>
+        group_by(CASTE_CATEGORY)|>
+        summarise(
+          prop_of_tg_in_castecategory_in_urban = sum(w_state)
+        )|>
+        adorn_percentages(denominator = "col")
+    ),
+  ) -> nested_people
+
+
+## Employment arrangement comparison ----
+
+nested_people|>
+  mutate(
+    
+    ### Distribution of TG across employment arrangement in urban area
+    
+    dist_of_tg_acr_emp_arr_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(is_tg == 1)|>
+        group_by(EMPLOYMENT_ARRANGEMENT)|>
+        summarise(
+          dist_of_tg_acr_emp_arr_urb = sum(w_state)
+        )
+        
+    ),
+    
+    ### Distribution of TG across employment arrangement and gender in urban area
+    
+    dist_of_tg_acr_emp_arr_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(is_tg == 1)|>
+        group_by(EMPLOYMENT_ARRANGEMENT, GENDER)|>
+        summarise(
+          dist_of_tg_acr_emp_arr_gender_urb = sum(w_state)
+        )
+      
+    ),
+    
+    ### Distribution of TG across employment arrangement and castecatgory in urban area
+    
+    dist_of_tg_acr_emp_arr_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(is_tg == 1)|>
+        group_by(EMPLOYMENT_ARRANGEMENT, CASTE_CATEGORY)|>
+        summarise(
+          dist_of_tg_acr_emp_arr_cc_urb = sum(w_state)
+        )
+      
+    ),
+    
+    ### Distribution of NTG across employment arrangement in urban area
+    
+    dist_of_ntg_acr_emp_arr_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        filter(is_tg == 0)|>
+        group_by(EMPLOYMENT_ARRANGEMENT)|>
+        summarise(
+          dist_of_ntg_acr_emp_arr_urb = sum(w_state)
+        )
+      
+    ),
+    
+    ### Distribution of NTG across employment arrangement and gender in urban area
+    
+    dist_of_ntg_acr_emp_arr_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        filter(is_tg == 0)|>
+        group_by(EMPLOYMENT_ARRANGEMENT, GENDER)|>
+        summarise(
+          dist_of_ntg_acr_emp_arr_gender_urb = sum(w_state)
+        )
+      
+    ),
+    
+    ### Distribution of NTG across employment arrangement and castecatgory in urban area
+    
+    dist_of_ntg_acr_emp_arr_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        filter(is_tg == 0)|>
+        group_by(EMPLOYMENT_ARRANGEMENT, CASTE_CATEGORY)|>
+        summarise(
+          dist_of_ntg_acr_emp_arr_cc_urb = sum(w_state)
+        )
+      
+    )
+    
+  ) -> nested_people
+
+
+
+# bank ac, mobile, pf,insurance -------------------------------------------
+
+
+nested_people|>
+  mutate(
+    
+    ### proportion of people in TG and NTG with bank in urban area 
+    
+    prop_TG_or_NTH_has_bnk_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_bnk_urb = Mean(
+            ifelse(
+              HAS_BANK_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+        
+    ),
+    
+    ### proportion of people in TG and NTG with bank across gender in urban area 
+    
+    prop_TG_or_NTH_has_bnk_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_bnk_gender_urb = Mean(
+            ifelse(
+              HAS_BANK_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with bank across caste category in urban area 
+    
+    prop_TG_or_NTH_has_bnk_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_bnk_cc_urb = Mean(
+            ifelse(
+              HAS_BANK_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with credit card in urban area 
+    
+    prop_TG_or_NTH_has_crec_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_crec_urb = Mean(
+            ifelse(
+              HAS_CREDITCARD == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with credit card across gender in urban area 
+    
+    prop_TG_or_NTH_has_crec_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_crec_gender_urb = Mean(
+            ifelse(
+              HAS_CREDITCARD == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with cred card across caste category in urban area 
+    
+    prop_TG_or_NTH_has_crec_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_crec_cc_urb = Mean(
+            ifelse(
+              HAS_CREDITCARD == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with PF in urban area 
+    
+    prop_TG_or_NTH_has_pfac_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_pfac_urb = Mean(
+            ifelse(
+              HAS_PF_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with PF across gender in urban area 
+    
+    prop_TG_or_NTH_has_pfac_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_pfac_gender_urb = Mean(
+            ifelse(
+              HAS_PF_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with PF across caste category in urban area 
+    
+    prop_TG_or_NTH_has_pfac_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_pfac_cc_urb = Mean(
+            ifelse(
+              HAS_PF_AC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with LIC in urban area 
+    
+    prop_TG_or_NTH_has_lic_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_lic_urb = Mean(
+            ifelse(
+              HAS_LIC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with LIC across gender in urban area 
+    
+    prop_TG_or_NTH_has_lic_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_lic_gender_urb = Mean(
+            ifelse(
+              HAS_LIC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with LIC across caste category in urban area 
+    
+    prop_TG_or_NTH_has_lic_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_lic_cc_urb = Mean(
+            ifelse(
+              HAS_LIC == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with Health Insurance in urban area 
+    
+    prop_TG_or_NTH_has_hi_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_hi_urb = Mean(
+            ifelse(
+              HAS_HEALTH_INSURANCE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with Health Insurance across gender in urban area 
+    
+    prop_TG_or_NTH_has_hi_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_hi_gender_urb = Mean(
+            ifelse(
+              HAS_HEALTH_INSURANCE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with Health Insurance across caste category in urban area 
+    
+    prop_TG_or_NTH_has_hi_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_hi_cc_urb = Mean(
+            ifelse(
+              HAS_HEALTH_INSURANCE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with mobile in urban area 
+    
+    prop_TG_or_NTH_has_mob_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg)|>
+        summarise(
+          prop_TG_or_NTH_has_mob_urb = Mean(
+            ifelse(
+              HAS_MOBILE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with mobile across gender in urban area 
+    
+    prop_TG_or_NTH_has_mob_gender_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,GENDER)|>
+        summarise(
+          prop_TG_or_NTH_has_mob_gender_urb = Mean(
+            ifelse(
+              HAS_MOBILE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    ),
+    
+    ### proportion of people in TG and NTG with mobile across caste category in urban area 
+    
+    prop_TG_or_NTH_has_mob_cc_urb = map(
+      data,
+      ~ filter(.x, REGION_TYPE == "URBAN")|>
+        filter(AGE_YRS>15 | 
+                 (AGE_YRS ==15 & AGE_MTHS >0))|>
+        filter(EMPLOYMENT_STATUS %in% c("Employed"))|>
+        group_by(is_tg,CASTE_CATEGORY)|>
+        summarise(
+          prop_TG_or_NTH_has_mob_cc_urb = Mean(
+            ifelse(
+              HAS_MOBILE == "Y",
+              1,0
+            ),
+            weights = w_state
+          )
+        )
+      
+    )
+    
+  ) -> nested_people
+
+
+# save the people stats ---------------------------------------------------
+
+## here I save the summary stats of people's
+## data. To do that i remove the data column 
+## from the nested data and then save the remaining
+## as a rda file.
+
+
+nested_people|>
+  select(-data) -> people_summary_stats
+
+save(people_summary_stats,
+     file = "data/cmie-summary-results.RData")
